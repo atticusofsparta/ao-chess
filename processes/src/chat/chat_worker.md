@@ -1,19 +1,4 @@
-## Write
-
-### `Move`
-Move api is same as [chess.js](https://github.com/jhlywa/chess.js)
-
-In the msg.Data provide stringified JSON
-
-```json
-{
-    "from": "h7",
-    "to": "h8",
-    "promotion": "q"
-}
-```
-
-### `Message`
+#### `Message`
 Player can send a message to the chat.
 
 in msg.Data encode a json object:
@@ -26,12 +11,3 @@ in msg.Data encode a json object:
     "compression": "gzip" // default compression from all messages.
 }
 ```
-
-## Read
-
-### `getFEN`
-
-### `getPGN`
-
-### `getChat`
-Returns all the chat history of the game

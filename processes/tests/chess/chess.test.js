@@ -5,7 +5,7 @@ import {
   AO_LOADER_HANDLER_ENV,
   STUB_ADDRESS,
   DEFAULT_HANDLE_OPTIONS,
-} from '../tools/constants.js';
+} from '../../tools/constants.js';
 
 describe('Chess Registry', async () => {
   let handle;
