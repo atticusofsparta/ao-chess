@@ -9,6 +9,16 @@ fetch the list of all games (live and historical)
 
 - filter by user address
 - filter by game IDs
+- filter by live/historical
+
+- Accepts `GameId` tag to fetch a specific message by game Id. Will send `ChessErrorMessage` if game id is not found.
+- Accepts `PlayerId` tag to fetch all games (live and historical) for a specific player. Will send `ChessErrorMessage` if Player Id is not found.
+- Returns all games if neither `GameId` or `PlayerId` is provided
+
+- Action tag for successful request is `ChessMessage`
+- json encoded game data included in Data tag for successful request
+
+- Accepts `Type` tag "Live | Historical" to filter results only from the selected table
 
 
 #### `Chess-Registry.Get-Players`

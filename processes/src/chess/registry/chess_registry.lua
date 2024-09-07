@@ -5,6 +5,7 @@
     This will mount the chess registry handlers to the AOS process
 ]]
 
+local json = require("json")
 local chess_registry = {
 	version = "0.0.1",
 }
@@ -71,7 +72,83 @@ chess_registry.init = function()
 
 	createActionHandler(actions.GetGames, function(msg)
 		print("GetGames")
+		local gameId = msg.GameId
+		local playerId = msg.PlayerId
+		local typeFilter = msg.Type
+
+		if gameId then
+			-- Fetch game by gameId if provided
+			if LiveGames[gameId] or HistoricalGames[gameId] then
+				ao.send({
+					Target = msg.From,
+					Action = "ChessMessage",
+					Data = json.encode(LiveGames[gameId] or HistoricalGames[gameId]),
+				})
+			else
+				ao.send({
+					Target = msg.From,
+					Action = "ChessErrorMessage",
+					Data = "Requested game not found",
+				})
+			end
+		else
+			-- Fetch games by playerId if no gameId is provided
+			if playerId then
+				if Players[playerId] then
+					local playerGames = {
+						Live = {},
+						Historical = {},
+					}
+
+					-- Iterate over the player's gameHistory
+					for historyGameId, gameData in pairs(Players[playerId].gameHistory) do
+						-- Check if the game is live or historical based on the endTimestamp
+						if not gameData.endTimestamp then
+							table.insert(playerGames.Live, gameData) -- Live game
+						else
+							table.insert(playerGames.Historical, gameData) -- Historical game
+						end
+					end
+
+					-- Apply typeFilter for Live or Historical games
+					local filteredGames = {}
+					if typeFilter ~= "Historical" then
+						filteredGames.Live = playerGames.Live
+					end
+					if typeFilter ~= "Live" then
+						filteredGames.Historical = playerGames.Historical
+					end
+
+					ao.send({
+						Target = msg.From,
+						Action = "ChessMessage",
+						Data = json.encode(filteredGames),
+					})
+				else
+					ao.send({
+						Target = msg.From,
+						Action = "ChessErrorMessage",
+						Data = "Requested Player not found",
+					})
+				end
+			else
+				-- Return all games if no gameId or playerId is provided
+				local allGames = {}
+				if typeFilter ~= "Historical" then
+					allGames.LiveGames = LiveGames
+				end
+				if typeFilter ~= "Live" then
+					allGames.HistoricalGames = HistoricalGames
+				end
+				ao.send({
+					Target = msg.From,
+					Action = "ChessMessage",
+					Data = json.encode(allGames),
+				})
+			end
+		end
 	end)
+
 	createActionHandler(actions.GetPlayers, function(msg)
 		print("GetPlayers")
 	end)
