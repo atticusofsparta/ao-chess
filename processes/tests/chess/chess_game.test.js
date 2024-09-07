@@ -1,18 +1,18 @@
 import assert from 'node:assert';
 import { describe, it, before } from 'node:test';
-import { createAntAosLoader } from './utils.js';
+import { createChessGameAosLoader } from '../../tools/utils.js';
 import {
   AO_LOADER_HANDLER_ENV,
   STUB_ADDRESS,
   DEFAULT_HANDLE_OPTIONS,
 } from '../../tools/constants.js';
 
-describe('Chess Registry', async () => {
+describe('Chess Game', async () => {
   let handle;
   let startMemory;
 
   before(async () => {
-    const loader = await createAntAosLoader();
+    const loader = await createChessGameAosLoader();
     handle = loader.handle;
     startMemory = loader.memory;
   });
@@ -28,17 +28,18 @@ describe('Chess Registry', async () => {
     );
   }
 
-  it('should handle game creation', async () => {
-    const { memory, result } = await sendMessage({
-      Method: 'CreateGame',
-      Args: {
-        White: STUB_ADDRESS,
-        Black: STUB_ADDRESS,
-      },
+  it('should handle game join', async () => {
+    const result = await sendMessage({
+      Tags: 
+        [{
+            name: 'Action',
+            value: 'Chess-Game.Join-Game'
+        }]
+      
     });
+    console.dir(result, {depth: null})
+    assert(result.Messages[0]);
 
-    assert.strictEqual(memory, startMemory);
-    assert.strictEqual(result, 'Game created');
   });
 
 });
