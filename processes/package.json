@@ -1,10 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "module:build": "cd src && ao build && cd .. && yarn module:load",
-    "module:publish": "cd src && ao publish process.wasm -w ../tools/key.json --tag=\"Memory-Limit\" --value=\"1-gb\" --tag=\"Compute-Limit\" --value=\"9000000000000\" && cd ..",
-    "module:load": "node tools/load-module.js",
-    "module:spawn": "node tools/spawn-module.js",
+    "chess-game:build": "node tools/bundle-aos.js --path=\"./src/chess/game/aos.lua\"",
+    "chess-registry:build": "node tools/bundle-aos.js --path=\"./src/chess/registry/aos.lua\"",
     "aos:build": "node tools/bundle-aos.js",
     "aos:publish": "node tools/bundle-aos.js && node tools/publish-aos.js",
     "aos:load": "node tools/bundle-aos.js && node tools/load-aos.js",
