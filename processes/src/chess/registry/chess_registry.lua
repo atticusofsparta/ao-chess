@@ -75,16 +75,20 @@ chess_registry.init = function()
 		local gameId = msg["Game-Id"]
 		local playerId = msg["Player-Id"]
 		local typeFilter = msg.Type
+		assert(
+			typeFilter == "Live" or typeFilter == "Historical" or typeFilter == "undefined" or typeFilter == nil,
+			"Type must equal 'Live', 'Historical', 'undefiined' or nil"
+		)
 
 		if gameId then
 			-- Error if requested game not found
 			assert(LiveGames[gameId] or HistoricalGames[gameId], "Requested game not found.")
 			-- Send game by gameId if provided
-				ao.send({
-					Target = msg.From,
-					Action = "ChessMessage",
-					Data = json.encode(LiveGames[gameId] or HistoricalGames[gameId]),
-				})
+			ao.send({
+				Target = msg.From,
+				Action = actions.GetGames .. "-Notice",
+				Data = json.encode(LiveGames[gameId] or HistoricalGames[gameId]),
+			})
 		else
 			-- Fetch games by playerId if no gameId is provided
 			if playerId then
@@ -97,7 +101,7 @@ chess_registry.init = function()
 					}
 
 					-- Iterate over the player's gameHistory
-					for historyGameId, gameData in pairs(Players[playerId].gameHistory) do
+					for __, gameData in pairs(Players[playerId].gameHistory) do
 						-- Check if the game is live or historical based on the endTimestamp
 						if not gameData.endTimestamp then
 							table.insert(playerGames.Live, gameData) -- Live game
@@ -117,13 +121,16 @@ chess_registry.init = function()
 					-- Send filtered game data
 					ao.send({
 						Target = msg.From,
-						Action = "ChessMessage",
+						Action = actions.GetGames .. "-Notice",
 						Data = json.encode(filteredGames),
 					})
 				end
 			else
 				-- Return all games if no gameId or playerId is provided
-				local allGames = {}
+				local allGames = {
+					LiveGames = {},
+					HistoricalGames = {},
+				}
 				if typeFilter ~= "Historical" then
 					allGames.LiveGames = LiveGames
 				end
@@ -132,7 +139,7 @@ chess_registry.init = function()
 				end
 				ao.send({
 					Target = msg.From,
-					Action = "ChessMessage",
+					Action = actions.GetGames .. "-Notice",
 					Data = json.encode(allGames),
 				})
 			end

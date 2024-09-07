@@ -15,10 +15,10 @@ fetch the list of all games (live and historical)
 - Accepts `Player-Id` tag to fetch all games (live and historical) for a specific player. Will error if Player Id is not found.
 - Returns all games if neither `Game-Id` or `Player-Id` is provided
 
-- Action tag for successful request is `ChessMessage`
+- Action tag for successful request is `Chess-Registry.Get-Games-Notice`
 - json encoded game data included in Data tag for successful request
 
-- Accepts `Type` tag "Live | Historical" to filter results only from the selected table
+- Accepts `Type` tag "Live | Historical | undefined | nil" to filter results only from the selected table
 
 
 #### `Chess-Registry.Get-Players`
