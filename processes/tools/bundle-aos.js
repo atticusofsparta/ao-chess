@@ -6,36 +6,29 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 async function main() {
   const args = process.argv.slice(2); // Get CLI arguments
-  if (args.length === 0) {
-    console.error('Please provide a path name as a CLI argument.');
+  const pathArg = args.find(arg => arg.startsWith('--path='));
+  const outputArg = args.find(arg => arg.startsWith('--output='));
+
+  if (!pathArg || !outputArg) {
+    console.error('Please provide both a --path and --output as CLI arguments.');
     return;
   }
 
-  let pathToLua;
-  for (let i = 0; i < args.length; i++) {
-    if (args[i].startsWith('--path=')) {
-      pathToLua = args[i].substring(7);
-      break;
-    }
-  }
-
-  if (!pathToLua) {
-    console.error('Please provide a valid --path argument.');
-    return;
-  }
+  const pathToLua = pathArg.split('=')[1];
+  const outputPath = outputArg.split('=')[1];
 
   console.log('Path to Lua:', pathToLua);
+  console.log('Output Path:', outputPath);
+
   const bundledLua = bundle(pathToLua);
 
-  const entryDir = path.dirname(pathToLua); // Get the directory of the entry file
-  const distDir = path.join(entryDir, 'dist'); // Create the dist directory in the entry file's directory
-
+  const distDir = path.dirname(outputPath);
   if (!fs.existsSync(distDir)) {
-    fs.mkdirSync(distDir);
+    fs.mkdirSync(distDir, { recursive: true });
   }
 
-  fs.writeFileSync(path.join(distDir, 'aos-bundled.lua'), bundledLua);
-  console.log('Lua has been bundled!');
+  fs.writeFileSync(outputPath, bundledLua);
+  console.log('Lua has been bundled and saved to', outputPath);
 }
 
 main();

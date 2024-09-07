@@ -1,13 +1,14 @@
 {
   "type": "module",
   "scripts": {
-    "chess-game:build": "node tools/bundle-aos.js --path=\"./src/chess/game/aos.lua\"",
-    "chess-registry:build": "node tools/bundle-aos.js --path=\"./src/chess/registry/aos.lua\"",
-    "aos:build": "node tools/bundle-aos.js",
+    "chess-game:build": "node tools/bundle-aos.js --path=\"./src/chess/game/aos.lua\" --output=\"./dist/chess/game/aos-bundled.lua\"",
+    "chess-registry:build": "node tools/bundle-aos.js --path=\"./src/chess/registry/aos.lua\" --output=\"./dist/chess/registry/aos-bundled.lua\"",
+    "chess:build": "yarn chess-game:build && yarn chess-registry:build",
+    "chess:test": "node --test-concurrency 1 --experimental-wasm-memory64 ./tests/chess/*.test.js",
     "aos:publish": "node tools/bundle-aos.js && node tools/publish-aos.js",
     "aos:load": "node tools/bundle-aos.js && node tools/load-aos.js",
     "aos:spawn": "node tools/spawn-aos.js",
-    "test": "node --test-concurrency 1 --experimental-wasm-memory64 **/*.test.js",
+    "test": "find ./tests -type f -name '*.test.js' -exec node --test-concurrency 1 --experimental-wasm-memory64 {} \\;",
     "evolve": "yarn aos:build && node tools/evolve.js"
   },
   "devDependencies": {
