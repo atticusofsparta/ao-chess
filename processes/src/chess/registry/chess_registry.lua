@@ -75,6 +75,25 @@ chess_registry.init = function()
 	end)
 	createActionHandler(actions.GetPlayers, function(msg)
 		print("GetPlayers")
+		local playerId = msg["Player-Id"]
+		if playerId then
+			-- Error if player not found
+			assert(Players[playerId], "Requested player not found.")
+			-- Send requested player
+			ao.send({
+				Target = msg.From,
+				Action = actions.GetPlayers .. "-Notice",
+				Data = json.encode(Players[playerId])
+			})
+		else
+			-- Send all players if specific player not specified
+			ao.send({
+				Target = msg.From,
+				Action = actions.GetPlayers .. "-Notice",
+				Data = json.encode(Players)
+			})
+		end
+
 	end)
 	createActionHandler(actions.JoinRegistry, function(msg)
 		print("JoinRegistry")
