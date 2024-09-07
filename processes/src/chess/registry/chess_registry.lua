@@ -72,28 +72,24 @@ chess_registry.init = function()
 
 	createActionHandler(actions.GetGames, function(msg)
 		print("GetGames")
-		local gameId = msg.GameId
-		local playerId = msg.PlayerId
+		local gameId = msg["Game-Id"]
+		local playerId = msg["Player-Id"]
 		local typeFilter = msg.Type
 
 		if gameId then
-			-- Fetch game by gameId if provided
-			if LiveGames[gameId] or HistoricalGames[gameId] then
+			-- Error if requested game not found
+			assert(LiveGames[gameId] or HistoricalGames[gameId], "Requested game not found.")
+			-- Send game by gameId if provided
 				ao.send({
 					Target = msg.From,
 					Action = "ChessMessage",
 					Data = json.encode(LiveGames[gameId] or HistoricalGames[gameId]),
 				})
-			else
-				ao.send({
-					Target = msg.From,
-					Action = "ChessErrorMessage",
-					Data = "Requested game not found",
-				})
-			end
 		else
 			-- Fetch games by playerId if no gameId is provided
 			if playerId then
+				-- Error if Player not found
+				assert(Players[playerId], "Requested player not found.")
 				if Players[playerId] then
 					local playerGames = {
 						Live = {},
@@ -118,17 +114,11 @@ chess_registry.init = function()
 					if typeFilter ~= "Live" then
 						filteredGames.Historical = playerGames.Historical
 					end
-
+					-- Send filtered game data
 					ao.send({
 						Target = msg.From,
 						Action = "ChessMessage",
 						Data = json.encode(filteredGames),
-					})
-				else
-					ao.send({
-						Target = msg.From,
-						Action = "ChessErrorMessage",
-						Data = "Requested Player not found",
 					})
 				end
 			else
