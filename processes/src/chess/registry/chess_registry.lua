@@ -4,7 +4,7 @@
     chess_registry.init()
     This will mount the chess registry handlers to the AOS process
 ]]
-
+local utils = require('common.utils')
 local json = require("json")
 local chess_registry = {
 	version = "0.0.1",
@@ -95,20 +95,7 @@ chess_registry.init = function()
 				-- Error if Player not found
 				assert(Players[playerId], "Requested player not found.")
 				if Players[playerId] then
-					local playerGames = {
-						Live = {},
-						Historical = {},
-					}
-
-					-- Iterate over the player's gameHistory
-					for __, gameData in pairs(Players[playerId].gameHistory) do
-						-- Check if the game is live or historical based on the endTimestamp
-						if not gameData.endTimestamp then
-							table.insert(playerGames.Live, gameData) -- Live game
-						else
-							table.insert(playerGames.Historical, gameData) -- Historical game
-						end
-					end
+					local playerGames = utils.sortPlayerGames(Players[playerId].gameHistory)
 
 					-- Apply typeFilter for Live or Historical games
 					local filteredGames = {}

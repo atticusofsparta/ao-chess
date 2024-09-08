@@ -254,4 +254,21 @@ function utils.createActionHandler(action, msgHandler, position)
 	)
 end
 
+-- Sorts a Player's game history into Live and Historical games
+function utils.sortPlayerGames(playerGameHistory)
+	local playerGames = {
+		Live = {},
+		Historical = {}
+	}
+	for __, gameData in pairs(playerGameHistory) do
+		-- Check if the game is live or historical based on the endTimestamp
+		if not gameData.endTimestamp then
+			table.insert(playerGames.Live, gameData) -- Live game
+		else
+			table.insert(playerGames.Historical, gameData) -- Historical game
+		end
+	end
+	return playerGames
+end
+
 return utils
