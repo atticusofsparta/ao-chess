@@ -99,14 +99,14 @@ chess_registry.init = function()
 				Live = {},
 				Historical = {},
 			}
-			for _, gameId in ipairs(gameIdList) do
+			for id, gameId in ipairs(gameIdList) do
 				local gameData = LiveGames[gameId] or HistoricalGames[gameId]
 				assert(gameData, "Requested game not found: " .. gameId) -- Error if a game is not found
 				-- Filter games into Live or Historical
 				if not gameData.endTimestamp then
-					table.insert(foundGames.Live, gameData)
+					foundGames.Live[id] = gameData
 				else
-					table.insert(foundGames.Historical, gameData)
+					foundGames.Historical[id] = gameData
 				end
 			end
 			-- Send the collected game data

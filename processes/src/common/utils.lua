@@ -259,16 +259,26 @@ end
 function utils.sortPlayerGames(playerGameHistory)
 	local playerGames = {
 		Live = {},
-		Historical = {}
+		Historical = {},
 	}
-	for __, gameData in pairs(playerGameHistory) do
+	for id, gameData in pairs(playerGameHistory) do
 		-- Check if the game is live or historical based on the endTimestamp
 		if not gameData.endTimestamp then
-			table.insert(playerGames.Live, gameData) -- Live game
+			playerGames.Live[id] = gameData -- Live game
 		else
-			table.insert(playerGames.Historical, gameData) -- Historical game
+			playerGames.Historical[id] = gameData -- Historical game
 		end
 	end
+	--[[
+	playerGames = {
+		Live = {
+			[game-id] = {...game object},
+				},
+		Historical = {
+			[game-id] = {...game object},
+		}
+	}
+]]
 	return playerGames
 end
 
