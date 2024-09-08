@@ -67,6 +67,7 @@ chess_registry.init = function()
 			gameHistory = { -- Linked list of game ids, allows for easy retrieval by player address
 				["game id"] = HistoricalGames["game id"] or LiveGames["game id"],
 			},
+			username = "username",
 		},
 	}
 
@@ -161,13 +162,22 @@ chess_registry.init = function()
 		print("EditProfile")
 	end)
 	createActionHandler(actions.CreateGame, function(msg)
+		-- msg.GameName
 		-- ensure to include forwarded tag metadata to identify the player on the Spawned handler
 		-- (forwarded tags are X- prefixed)
 		print("CreateGame")
+		ao.spawn(ao.Process.Module.Id or "moduleid", {
+			Tags = {
+				["X-PlayerId"] = msg.PlayerId,
+				["X-GameId"] = msg.GameId,
+				["X-GameName"] = msg.GameName,
+			},
+		})
 	end)
 	createActionHandler(actions.Spawned, function(msg)
 		-- add game ID and player ID to the LiveGames table
 		print("Spawned")
+		-- msg.Tags.['X-PlayerId']
 	end)
 	createActionHandler(actions.JoinGame, function(msg)
 		print("JoinGame")

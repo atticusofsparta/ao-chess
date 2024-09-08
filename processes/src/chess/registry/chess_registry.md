@@ -47,7 +47,7 @@ Spawned is a reserved action handler name in aos that is sent to a parent proces
 
 Use the forwarded tags to identify the game creator and update the games and players tables appropriately
 
-#### `Chess-Registry.JoinGame`
+#### `Chess-Registry.Join-Game`
 Message handler for when opponent joins a game, only accessible by the spawned game process, which sends the message to the chess registry after a player joins
 - add the game to the opponents list
 
@@ -55,4 +55,4 @@ Message handler for when opponent joins a game, only accessible by the spawned g
 Returns the final score and winner of the game
 - calculate new ELO's and update both players elo and set them to the players profiles
 - update the status of the game as complete and move the the historical games list
-- set the wins, losses, draws, and surrenders appropriately
+- set the wins, losses, stalemates, and surrenders appropriately
