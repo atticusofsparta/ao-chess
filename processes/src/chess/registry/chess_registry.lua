@@ -4,7 +4,6 @@
     chess_registry.init()
     This will mount the chess registry handlers to the AOS process
 ]]
-local utils = require("common.utils")
 local json = require("json")
 local chess_registry = {
 	version = "0.0.1",
@@ -155,22 +154,29 @@ chess_registry.init = function()
 
 	createActionHandler(actions.GetPlayers, function(msg)
 		print("GetPlayers")
-		local playerId = msg["Player-Id"]
-		if playerId then
-			-- Error if player not found
-			assert(Players[playerId], "Requested player not found.")
+		local playerIds = msg["Player-Ids"]
+		local playerList = {}
+		if playerIds then
+			playerIds = json.decode(playerIds)
+			assert(utils.isArray(playerIds), "Player-Ids must be provided as a stringified array.")
+
+			for _, playerId in ipairs(playerIds) do 
+				assert(Players[playerId], "Player not found: " .. playerId)
+				playerList[playerId] = Players[playerId]
+			end
+
 			-- Send requested player
 			ao.send({
 				Target = msg.From,
 				Action = actions.GetPlayers .. "-Notice",
-				Data = json.encode(Players[playerId])
+				Data = json.encode(utils.compressPlayerList(playerList))
 			})
 		else
 			-- Send all players if specific player not specified
 			ao.send({
 				Target = msg.From,
 				Action = actions.GetPlayers .. "-Notice",
-				Data = json.encode(Players)
+				Data = json.encode(utils.compressPlayerList(Players))
 			})
 		end
 

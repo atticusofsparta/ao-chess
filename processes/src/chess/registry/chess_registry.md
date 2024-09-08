@@ -26,7 +26,9 @@ fetch the list of all games (live and historical)
 fetch all players
 - filter by address list
 
-- Accepts `Player-Id` tag to fetch specific player. Will error if player not found.
+- Accepts `Player-Ids` tag to fetch specific players. Will error if any player not found.
+- `Player-Ids` must be a stringified array. 
+- Player game history will be compressed to only return game Ids, not entire game objects.
 
 ### Write
 
