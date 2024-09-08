@@ -282,4 +282,44 @@ function utils.sortPlayerGames(playerGameHistory)
 	return playerGames
 end
 
+-- Takes a table of player objects and compresses the game history into an array of gameIds
+-- @param {table} playerTable - Table of players, each keyed by player ID, each with a gameHistory
+function utils.compressPlayerList(playerTable)
+	local compressedTable = {}
+
+	-- Iterate over each player in the playerTable
+	for playerId, playerData in pairs(playerTable) do
+		-- Initialize an array to hold game IDs
+		local compressedGameHistory = {}
+
+		-- Iterate over the keys (game IDs) in the player's gameHistory
+		for gameId in pairs(playerData.gameHistory) do
+			table.insert(compressedGameHistory, gameId) -- Add the game ID to the array
+		end
+
+		-- Replace the player's gameHistory with the compressed array of game IDs
+		playerData.gameHistory = compressedGameHistory
+
+		-- Add the updated player data back into the compressed table
+		compressedTable[playerId] = playerData
+	end
+
+	--[[
+	compressedTable = {
+		["player1-id"] = {
+			username = "player1",
+			stats = {...stats},
+			gameHistory = {"game1", "game2"}
+			},
+		["player2-id"] = {
+			username = "player2",
+			stats = {...stats},
+			gameHistory = {"game3", "game4", "game5"}
+			}
+		}
+	]]
+
+	return compressedTable
+end
+
 return utils
