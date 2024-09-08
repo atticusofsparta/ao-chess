@@ -80,26 +80,18 @@ chess_registry.init = function()
 			"Type must equal 'Live', 'Historical', 'undefiined' or nil"
 		)
 
-		-- Function to trim spaces from strings
-		local function trim(s)
-			return s:match("^%s*(.-)%s*$")
-		end
-
-		-- Parse and trim gameIds
-		local gameIdList = {}
+		-- decode gameIds if they exist
 		if gameIds then
-			for gameId in string.gmatch(gameIds, "([^,]+)") do
-				table.insert(gameIdList, trim(gameId)) -- Trim any spaces around the gameId
-			end
+			gameIds = json.decode(gameIds)
 		end
 
-		if #gameIdList > 0 then
+		if gameIds and #gameIds > 0 then
 			-- Iterate over each gameId and send the game data if found
 			local foundGames = {
 				Live = {},
 				Historical = {},
 			}
-			for id, gameId in ipairs(gameIdList) do
+			for id, gameId in ipairs(gameIds) do
 				local gameData = LiveGames[gameId] or HistoricalGames[gameId]
 				assert(gameData, "Requested game not found: " .. gameId) -- Error if a game is not found
 				-- Filter games into Live or Historical
