@@ -11,7 +11,8 @@ fetch the list of all games (live and historical)
 - filter by game IDs
 - filter by live/historical
 
-- Accepts `Game-Id` tag to fetch a specific message by game Id. Will error if game id is not found.
+- Accepts `Game-Ids` tag to fetch a specific message by game Id. Will error if game id is not found.
+- Multiple `Game-Ids`, provided as a comma separated string, are accepted.
 - Accepts `Player-Id` tag to fetch all games (live and historical) for a specific player. Will error if Player Id is not found.
 - Returns all games if neither `Game-Id` or `Player-Id` is provided
 

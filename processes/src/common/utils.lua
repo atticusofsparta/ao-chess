@@ -255,6 +255,7 @@ function utils.createActionHandler(action, msgHandler, position)
 end
 
 -- Sorts a Player's game history into Live and Historical games
+-- @param {table} playerGameHistory
 function utils.sortPlayerGames(playerGameHistory)
 	local playerGames = {
 		Live = {},

@@ -4,7 +4,7 @@
     chess_registry.init()
     This will mount the chess registry handlers to the AOS process
 ]]
-local utils = require('common.utils')
+local utils = require("common.utils")
 local json = require("json")
 local chess_registry = {
 	version = "0.0.1",
@@ -72,7 +72,7 @@ chess_registry.init = function()
 
 	createActionHandler(actions.GetGames, function(msg)
 		print("GetGames")
-		local gameId = msg["Game-Id"]
+		local gameIds = msg["Game-Ids"]
 		local playerId = msg["Player-Id"]
 		local typeFilter = msg.Type
 		assert(
@@ -80,20 +80,46 @@ chess_registry.init = function()
 			"Type must equal 'Live', 'Historical', 'undefiined' or nil"
 		)
 
-		if gameId then
-			-- Error if requested game not found
-			assert(LiveGames[gameId] or HistoricalGames[gameId], "Requested game not found.")
-			-- Send game by gameId if provided
+		-- Function to trim spaces from strings
+		local function trim(s)
+			return s:match("^%s*(.-)%s*$")
+		end
+
+		-- Parse and trim gameIds
+		local gameIdList = {}
+		if gameIds then
+			for gameId in string.gmatch(gameIds, "([^,]+)") do
+				table.insert(gameIdList, trim(gameId)) -- Trim any spaces around the gameId
+			end
+		end
+
+		if #gameIdList > 0 then
+			-- Iterate over each gameId and send the game data if found
+			local foundGames = {
+				Live = {},
+				Historical = {},
+			}
+			for _, gameId in ipairs(gameIdList) do
+				local gameData = LiveGames[gameId] or HistoricalGames[gameId]
+				assert(gameData, "Requested game not found: " .. gameId) -- Error if a game is not found
+				-- Filter games into Live or Historical
+				if not gameData.endTimestamp then
+					table.insert(foundGames.Live, gameData)
+				else
+					table.insert(foundGames.Historical, gameData)
+				end
+			end
+			-- Send the collected game data
 			ao.send({
 				Target = msg.From,
 				Action = actions.GetGames .. "-Notice",
-				Data = json.encode(LiveGames[gameId] or HistoricalGames[gameId]),
+				Data = json.encode(foundGames),
 			})
 		else
 			-- Fetch games by playerId if no gameId is provided
 			if playerId then
 				-- Error if Player not found
-				assert(Players[playerId], "Requested player not found.")
+				assert(Players[playerId], "Requested player not found: " .. playerId)
 				if Players[playerId] then
 					local playerGames = utils.sortPlayerGames(Players[playerId].gameHistory)
 
