@@ -4,7 +4,8 @@
     chess_registry.init()
     This will mount the chess registry handlers to the AOS process
 ]]
-
+local utils = require("common.utils")
+local json = require("json")
 local chess_registry = {
 	version = "0.0.1",
 }
@@ -72,7 +73,86 @@ chess_registry.init = function()
 
 	createActionHandler(actions.GetGames, function(msg)
 		print("GetGames")
+		local gameIds = msg["Game-Ids"]
+		local playerId = msg["Player-Id"]
+		local typeFilter = msg.Type
+		assert(
+			typeFilter == "Live" or typeFilter == "Historical" or typeFilter == "undefined" or typeFilter == nil,
+			"Type must equal 'Live', 'Historical', 'undefiined' or nil"
+		)
+
+		-- decode gameIds if they exist
+		if gameIds then
+			gameIds = json.decode(gameIds)
+			assert(utils.isArray(gameIds), "Game-Ids must be provided as a stringified array.")
+		end
+
+		if gameIds and #gameIds > 0 then
+			-- Iterate over each gameId and send the game data if found
+			local foundGames = {
+				Live = {},
+				Historical = {},
+			}
+			for _, gameId in ipairs(gameIds) do
+				local gameData = LiveGames[gameId] or HistoricalGames[gameId]
+				assert(gameData, "Requested game not found: " .. gameId) -- Error if a game is not found
+				-- Filter games into Live or Historical
+				if not gameData.endTimestamp then
+					foundGames.Live[gameId] = gameData
+				else
+					foundGames.Historical[gameId] = gameData
+				end
+			end
+			-- Send the collected game data
+			ao.send({
+				Target = msg.From,
+				Action = actions.GetGames .. "-Notice",
+				Data = json.encode(foundGames),
+			})
+		else
+			-- Fetch games by playerId if no gameId is provided
+			if playerId then
+				-- Error if Player not found
+				assert(Players[playerId], "Requested player not found: " .. playerId)
+				if Players[playerId] then
+					local playerGames = utils.sortPlayerGames(Players[playerId].gameHistory)
+
+					-- Apply typeFilter for Live or Historical games
+					local filteredGames = {}
+					if typeFilter ~= "Historical" then
+						filteredGames.Live = playerGames.Live
+					end
+					if typeFilter ~= "Live" then
+						filteredGames.Historical = playerGames.Historical
+					end
+					-- Send filtered game data
+					ao.send({
+						Target = msg.From,
+						Action = actions.GetGames .. "-Notice",
+						Data = json.encode(filteredGames),
+					})
+				end
+			else
+				-- Return all games if no gameId or playerId is provided
+				local allGames = {
+					LiveGames = {},
+					HistoricalGames = {},
+				}
+				if typeFilter ~= "Historical" then
+					allGames.LiveGames = LiveGames
+				end
+				if typeFilter ~= "Live" then
+					allGames.HistoricalGames = HistoricalGames
+				end
+				ao.send({
+					Target = msg.From,
+					Action = actions.GetGames .. "-Notice",
+					Data = json.encode(allGames),
+				})
+			end
+		end
 	end)
+
 	createActionHandler(actions.GetPlayers, function(msg)
 		print("GetPlayers")
 		local playerId = msg["Player-Id"]
