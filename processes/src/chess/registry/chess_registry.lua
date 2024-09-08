@@ -84,6 +84,7 @@ chess_registry.init = function()
 		-- decode gameIds if they exist
 		if gameIds then
 			gameIds = json.decode(gameIds)
+			assert(utils.isArray(gameIds), "Game-Ids must be provided as a stringified array.")
 		end
 
 		if gameIds and #gameIds > 0 then
@@ -92,14 +93,14 @@ chess_registry.init = function()
 				Live = {},
 				Historical = {},
 			}
-			for id, gameId in ipairs(gameIds) do
+			for _, gameId in ipairs(gameIds) do
 				local gameData = LiveGames[gameId] or HistoricalGames[gameId]
 				assert(gameData, "Requested game not found: " .. gameId) -- Error if a game is not found
 				-- Filter games into Live or Historical
 				if not gameData.endTimestamp then
-					foundGames.Live[id] = gameData
+					foundGames.Live[gameId] = gameData
 				else
-					foundGames.Historical[id] = gameData
+					foundGames.Historical[gameId] = gameData
 				end
 			end
 			-- Send the collected game data
