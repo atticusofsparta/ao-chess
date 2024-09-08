@@ -2,7 +2,7 @@
 
 local utils = { _version = "0.0.1" }
 
-local function isArray(table)
+function utils.isArray(table)
 	if type(table) == "table" then
 		local maxIndex = 0
 		for k, v in pairs(table) do
@@ -45,8 +45,8 @@ end
 utils.concat = utils.curry(function(a, b)
 	assert(type(a) == "table", "first argument should be a table that is an array")
 	assert(type(b) == "table", "second argument should be a table that is an array")
-	assert(isArray(a), "first argument should be a table")
-	assert(isArray(b), "second argument should be a table")
+	assert(utils.isArray(a), "first argument should be a table")
+	assert(utils.isArray(b), "second argument should be a table")
 
 	local result = {}
 	for i = 1, #a do
@@ -64,7 +64,7 @@ end, 2)
 -- @param {table<Array>} t
 utils.reduce = utils.curry(function(fn, initial, t)
 	assert(type(fn) == "function", "first argument should be a function that accepts (result, value, key)")
-	assert(type(t) == "table" and isArray(t), "third argument should be a table that is an array")
+	assert(type(t) == "table" and utils.isArray(t), "third argument should be a table that is an array")
 	local result = initial
 	for k, v in pairs(t) do
 		if result == nil then
@@ -80,7 +80,7 @@ end, 3)
 -- @param {table<Array>} data
 utils.map = utils.curry(function(fn, data)
 	assert(type(fn) == "function", "first argument should be a unary function")
-	assert(type(data) == "table" and isArray(data), "second argument should be an Array")
+	assert(type(data) == "table" and utils.isArray(data), "second argument should be an Array")
 
 	local function map(result, v, k)
 		result[k] = fn(v, k)
@@ -94,7 +94,7 @@ end, 2)
 -- @param {table<Array>} data
 utils.filter = utils.curry(function(fn, data)
 	assert(type(fn) == "function", "first argument should be a unary function")
-	assert(type(data) == "table" and isArray(data), "second argument should be an Array")
+	assert(type(data) == "table" and utils.isArray(data), "second argument should be an Array")
 
 	local function filter(result, v, _k)
 		if fn(v) then
@@ -252,6 +252,34 @@ function utils.createActionHandler(action, msgHandler, position)
 			return handlerRes
 		end
 	)
+end
+
+-- Sorts a Player's game history into Live and Historical games
+-- @param {table} playerGameHistory
+function utils.sortPlayerGames(playerGameHistory)
+	local playerGames = {
+		Live = {},
+		Historical = {},
+	}
+	for id, gameData in pairs(playerGameHistory) do
+		-- Check if the game is live or historical based on the endTimestamp
+		if not gameData.endTimestamp then
+			playerGames.Live[id] = gameData -- Live game
+		else
+			playerGames.Historical[id] = gameData -- Historical game
+		end
+	end
+	--[[
+	playerGames = {
+		Live = {
+			[game-id] = {...game object},
+				},
+		Historical = {
+			[game-id] = {...game object},
+		}
+	}
+]]
+	return playerGames
 end
 
 return utils
