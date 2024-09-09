@@ -28,18 +28,32 @@ describe('Chess Registry', async () => {
     );
   }
 
-  it('should handle game creation', async () => {
+  it('should get player list', async () => {
     const result = await sendMessage({
       Tags: 
         [{
             name: 'Action',
-            value: 'Chess-Registry.Create-Game'
+            value: 'Chess-Registry.Get-Players'
         }]
       
     });
+    console.log("This part: ")
     console.dir(result, {depth: null})
     assert(result.Messages[0]);
+    });
 
-  });
+  // it('should handle game creation', async () => {
+  //   const result = await sendMessage({
+  //     Tags: 
+  //       [{
+  //           name: 'Action',
+  //           value: 'Chess-Registry.Create-Game'
+  //       }]
+      
+  //   });
+  //   console.dir(result, {depth: null})
+  //   assert(result.Messages[0]);
+
+  // });
 
 });

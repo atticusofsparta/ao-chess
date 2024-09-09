@@ -24,8 +24,8 @@ local actions = {
 }
 chess_registry.ActionMap = actions
 chess_registry.init = function()
-	local constants = require("processes.src.common.constants")
-	local utils = require("processes.src.common.utils")
+	local constants = require('.constants')
+	local utils = require(".utils")
 	local createActionHandler = utils.createActionHandler
 
 	LiveGames = {

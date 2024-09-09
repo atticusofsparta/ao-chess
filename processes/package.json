@@ -5,6 +5,7 @@
     "chess-registry:build": "node tools/bundle-aos.js --path=\"./src/chess/registry/aos.lua\" --output=\"./dist/chess/registry/aos-bundled.lua\"",
     "chess:build": "yarn chess-game:build && yarn chess-registry:build",
     "chess:test": "node --test-concurrency 1 --experimental-wasm-memory64 ./tests/chess/*.test.js",
+    "chess:test-registry": "node --test-concurrency 1 --experimental-wasm-memory64 ./tests/chess/chess_registry.test.js",
     "aos:publish": "node tools/bundle-aos.js && node tools/publish-aos.js",
     "aos:load": "node tools/bundle-aos.js && node tools/load-aos.js",
     "aos:spawn": "node tools/spawn-aos.js",
