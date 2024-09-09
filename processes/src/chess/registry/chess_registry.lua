@@ -24,7 +24,7 @@ local actions = {
 }
 chess_registry.ActionMap = actions
 chess_registry.init = function()
-	local constants = require('.constants')
+	local constants = require(".constants")
 	local utils = require(".utils")
 	local createActionHandler = utils.createActionHandler
 
@@ -160,7 +160,7 @@ chess_registry.init = function()
 			playerIds = json.decode(playerIds)
 			assert(utils.isArray(playerIds), "Player-Ids must be provided as a stringified array.")
 
-			for _, playerId in ipairs(playerIds) do 
+			for _, playerId in ipairs(playerIds) do
 				assert(Players[playerId], "Player not found: " .. playerId)
 				playerList[playerId] = Players[playerId]
 			end
@@ -169,20 +169,35 @@ chess_registry.init = function()
 			ao.send({
 				Target = msg.From,
 				Action = actions.GetPlayers .. "-Notice",
-				Data = json.encode(utils.compressPlayerList(playerList))
+				Data = json.encode(utils.compressPlayerList(playerList)),
 			})
 		else
 			-- Send all players if specific player not specified
 			ao.send({
 				Target = msg.From,
 				Action = actions.GetPlayers .. "-Notice",
-				Data = json.encode(utils.compressPlayerList(Players))
+				Data = json.encode(utils.compressPlayerList(Players)),
 			})
 		end
-
 	end)
 	createActionHandler(actions.JoinRegistry, function(msg)
 		print("JoinRegistry")
+		assert(not Players[msg.From], "Player already registered")
+		local playerTable = {
+			stats = {
+				elo = constants.DEFAULT_ELO,
+				wins = 0,
+				losses = 0,
+				stalemates = 0,
+				surrenders = 0,
+			},
+			username = msg.Username,
+		}
+		Players[msg.From] = playerTable
+		-- clears the default from Players after adding a the first player
+		if Players["player id"] then
+			Players["player id"] = nil
+		end
 	end)
 	createActionHandler(actions.EditProfile, function(msg)
 		print("EditProfile")

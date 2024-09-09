@@ -34,8 +34,9 @@ fetch all players
 
 #### `Chess-Registry.Join-Registry`
 registers a new player to the registry
-- takes in friendly name
+- Accepts optional `Username` tag
 - set default elo of 1500
+- will error if user already registered
 
 #### `Chess-Registry.Edit-Profile`
 update friendly name of registered profile
