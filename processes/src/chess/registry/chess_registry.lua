@@ -198,6 +198,11 @@ chess_registry.init = function()
 		if Players["player id"] then
 			Players["player id"] = nil
 		end
+		ao.send({
+			Target = msg.From,
+			Action = actions.JoinRegistry .. '-Notice',
+			Data = "Successfully registered"
+		})
 	end)
 	createActionHandler(actions.EditProfile, function(msg)
 		print("EditProfile")

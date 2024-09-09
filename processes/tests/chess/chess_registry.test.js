@@ -28,6 +28,22 @@ describe('Chess Registry', async () => {
     );
   }
 
+  it('should register player with username "Karl-Bob-Danny-Frank', async () => {
+    const result = await sendMessage({
+      Tags: [{
+        name: 'Action',
+        value: 'Chess-Registry.Join-Registry'
+      },
+    {
+      name: 'Username',
+      value: 'Karl-Bob-Danny-Frank'
+    }]
+    })
+    console.dir(result, {depth: null})
+    assert(result.Messages[0])
+    assert(result.Messages[0].Data == "Successfully registered")
+  })
+
   it('should get player list', async () => {
     const result = await sendMessage({
       Tags: 
@@ -37,9 +53,11 @@ describe('Chess Registry', async () => {
         }]
       
     });
-    console.log("This part: ")
     console.dir(result, {depth: null})
     assert(result.Messages[0]);
+    const jsonResults = JSON.parse(result.Messages[0].Data)
+    console.dir(jsonResults, {depth: null})
+    assert(jsonResults.username == "Karl-Bob-Danny-Frank")
     });
 
   // it('should handle game creation', async () => {
