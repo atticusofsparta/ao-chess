@@ -204,7 +204,7 @@ chess_registry.init = function()
 	createActionHandler(actions.EditProfile, function(msg)
 		print("EditProfile")
 		assert(Players[msg.From], "No profile exists for " .. msg.From)
-		assert(msg.Username, "Must provide new Username")
+		assert(type(msg.Username) == "string", "Must provide new Username")
 
 		Players[msg.From].username = msg.Username
 		ao.send({
