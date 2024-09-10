@@ -55,19 +55,20 @@ chess_registry.init = function()
 		},
 	}
 	Players = {
-		["player id"] = {
-			stats = {
-				elo = constants.DEFAULT_ELO,
-				wins = 0,
-				losses = 0,
-				stalemates = 0,
-				surrenders = 0,
-			},
-			gameHistory = { -- Linked list of game ids, allows for easy retrieval by player address
-				["game id"] = HistoricalGames["game id"] or LiveGames["game id"],
-			},
-			username = "username",
-		},
+		--[[ ["player id"] = {
+		 	stats = {
+		 		elo = constants.DEFAULT_ELO,
+		 		wins = 0,
+		 		losses = 0,
+		 		stalemates = 0,
+		 		surrenders = 0,
+		 	},
+		 	gameHistory = { -- Linked list of game ids, allows for easy retrieval by player address
+		 		["game id"] = HistoricalGames["game id"] or LiveGames["game id"],
+		 	},
+		 	username = "username",
+		 },
+		 ]]
 	}
 
 	createActionHandler(actions.GetGames, function(msg)
@@ -194,14 +195,10 @@ chess_registry.init = function()
 			username = msg.Username,
 		}
 		Players[tostring(msg.From)] = playerTable
-		-- clears the default from Players after adding a the first player
-		if Players["player id"] then
-			Players["player id"] = nil
-		end
 		ao.send({
 			Target = msg.From,
-			Action = actions.JoinRegistry .. '-Notice',
-			Data = "Successfully registered"
+			Action = actions.JoinRegistry .. "-Notice",
+			Data = "Successfully registered",
 		})
 	end)
 	createActionHandler(actions.EditProfile, function(msg)
