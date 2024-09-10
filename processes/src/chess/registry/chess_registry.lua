@@ -24,8 +24,8 @@ local actions = {
 }
 chess_registry.ActionMap = actions
 chess_registry.init = function()
-	local constants = require("processes.src.common.constants")
-	local utils = require("processes.src.common.utils")
+	local constants = require(".constants")
+	local utils = require(".utils")
 	local createActionHandler = utils.createActionHandler
 
 	LiveGames = {
@@ -55,19 +55,20 @@ chess_registry.init = function()
 		},
 	}
 	Players = {
-		["player id"] = {
-			stats = {
-				elo = constants.DEFAULT_ELO,
-				wins = 0,
-				losses = 0,
-				stalemates = 0,
-				surrenders = 0,
-			},
-			gameHistory = { -- Linked list of game ids, allows for easy retrieval by player address
-				["game id"] = HistoricalGames["game id"] or LiveGames["game id"],
-			},
-			username = "username",
-		},
+		--[[ ["player id"] = {
+		 	stats = {
+		 		elo = constants.DEFAULT_ELO,
+		 		wins = 0,
+		 		losses = 0,
+		 		stalemates = 0,
+		 		surrenders = 0,
+		 	},
+		 	gameHistory = { -- Linked list of game ids, allows for easy retrieval by player address
+		 		["game id"] = HistoricalGames["game id"] or LiveGames["game id"],
+		 	},
+		 	username = "username",
+		 },
+		 ]]
 	}
 
 	createActionHandler(actions.GetGames, function(msg)
@@ -160,29 +161,45 @@ chess_registry.init = function()
 			playerIds = json.decode(playerIds)
 			assert(utils.isArray(playerIds), "Player-Ids must be provided as a stringified array.")
 
-			for _, playerId in ipairs(playerIds) do 
+			for _, playerId in ipairs(playerIds) do
+				playerId = tostring(playerId)
 				assert(Players[playerId], "Player not found: " .. playerId)
 				playerList[playerId] = Players[playerId]
 			end
-
 			-- Send requested player
 			ao.send({
 				Target = msg.From,
 				Action = actions.GetPlayers .. "-Notice",
-				Data = json.encode(utils.compressPlayerList(playerList))
+				Data = json.encode(utils.compressPlayerList(playerList)),
 			})
 		else
 			-- Send all players if specific player not specified
 			ao.send({
 				Target = msg.From,
 				Action = actions.GetPlayers .. "-Notice",
-				Data = json.encode(utils.compressPlayerList(Players))
+				Data = json.encode(utils.compressPlayerList(Players)),
 			})
 		end
-
 	end)
 	createActionHandler(actions.JoinRegistry, function(msg)
 		print("JoinRegistry")
+		assert(not Players[msg.From], "Player already registered")
+		local playerTable = {
+			stats = {
+				elo = constants.DEFAULT_ELO,
+				wins = 0,
+				losses = 0,
+				stalemates = 0,
+				surrenders = 0,
+			},
+			username = msg.Username,
+		}
+		Players[tostring(msg.From)] = playerTable
+		ao.send({
+			Target = msg.From,
+			Action = actions.JoinRegistry .. "-Notice",
+			Data = "Successfully registered",
+		})
 	end)
 	createActionHandler(actions.EditProfile, function(msg)
 		print("EditProfile")
