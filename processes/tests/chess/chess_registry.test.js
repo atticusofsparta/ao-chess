@@ -90,6 +90,19 @@ describe('Chess Registry', async () => {
     assert(jsonResults[DEFAULT_HANDLE_OPTIONS.Id].username == "Karl-Bob-Danny-Frank")
   })
 
+  it('should set alternate user\'s username to "Volciferon"', async () => {
+    const result = await alternateSendMessage({
+      Tags: [
+        {name: "Action", value: "Chess-Registry.Edit-Profile"},
+        {name: "Username", value: "Volciferon"}
+      ]
+    }, registerMemory)
+    console.dir(result, {depth: null})
+    assert(result.Messages[0])
+    assert(result.Messages[0].Data = "Username updated")
+    registerMemory = result.Memory
+  })
+
   it('should get full player list', async () => {
     const result = await sendMessage({
       Tags: 
@@ -103,7 +116,7 @@ describe('Chess Registry', async () => {
     assert(result.Messages[0]);
     const jsonResults = JSON.parse(result.Messages[0].Data)
     assert(jsonResults[DEFAULT_HANDLE_OPTIONS.Id].username == "Karl-Bob-Danny-Frank")
-    assert(jsonResults[ALTERNATE_HANDLE_OPTIONS.Id])
+    assert(jsonResults[ALTERNATE_HANDLE_OPTIONS.Id].username == "Volciferon")
     });
 
   // it('should handle game creation', async () => {

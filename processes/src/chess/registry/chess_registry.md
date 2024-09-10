@@ -37,10 +37,15 @@ registers a new player to the registry
 - Accepts optional `Username` tag
 - set default elo of 1500
 - will error if user already registered
+- Data in response message is "Successfully registered"
 
 #### `Chess-Registry.Edit-Profile`
 update friendly name of registered profile
-- takes in friendly name of user
+- Accept `Username` tag
+- Player profile for sending wallet will be updated with new username
+- Will error if player profile does not exist
+- Will error if `Username` tag not present.
+- Data in response message is "Updated username"
 
 #### `Chess-Registry.Create-Game`
 Spawn a new game process and record the ID in the games registry
