@@ -5,6 +5,7 @@ import {
   AO_LOADER_HANDLER_ENV,
   STUB_ADDRESS,
   DEFAULT_HANDLE_OPTIONS,
+  ALTERNATE_HANDLE_OPTIONS
 } from '../../tools/constants.js';
 
 describe('Chess Registry', async () => {
@@ -29,6 +30,17 @@ describe('Chess Registry', async () => {
     );
   }
 
+   async function alternateSendMessage(options = {}, mem = startMemory) {
+    return handle(
+      mem,
+      {
+        ...ALTERNATE_HANDLE_OPTIONS,
+        ...options,
+      },
+      AO_LOADER_HANDLER_ENV,
+    );
+  }
+
   it('should register player with username "Karl-Bob-Danny-Frank', async () => {
     const result = await sendMessage({
       Tags: [{
@@ -39,14 +51,46 @@ describe('Chess Registry', async () => {
       name: 'Username',
       value: 'Karl-Bob-Danny-Frank'
     }]
-    })
+    }, registerMemory)
     console.dir(result, {depth: null})
     assert(result.Messages[0])
     assert(result.Messages[0].Data == "Successfully registered")
     registerMemory = result.Memory
   })
 
-  it('should get player list', async () => {
+  it('should register a second player with no username', async () => {
+    const result = await alternateSendMessage({
+      Tags: [
+        { name: "Action",
+          value: "Chess-Registry.Join-Registry"
+        }
+      ]
+    }, registerMemory)
+    console.dir(result, {depth: null})
+    assert(result.Messages[0])
+    assert(result.Messages[0].Data == "Successfully registered")
+    registerMemory = result.Memory
+  })
+
+  it('should get Player by Id', async () => {
+    const array = [DEFAULT_HANDLE_OPTIONS.Id]
+    const result = await sendMessage({
+      Tags: [
+        { name: "Action", value: "Chess-Registry.Get-Players"
+        },
+        {
+          name: "Player-Ids",
+          value: JSON.stringify(array)
+        }
+      ]
+    }, registerMemory)
+    console.dir(result, {depth: null})
+    assert(result.Messages[0])
+    const jsonResults = JSON.parse(result.Messages[0].Data)
+    assert(jsonResults[DEFAULT_HANDLE_OPTIONS.Id].username == "Karl-Bob-Danny-Frank")
+  })
+
+  it('should get full player list', async () => {
     const result = await sendMessage({
       Tags: 
         [{
@@ -58,10 +102,8 @@ describe('Chess Registry', async () => {
     console.dir(result, {depth: null})
     assert(result.Messages[0]);
     const jsonResults = JSON.parse(result.Messages[0].Data)
-    console.dir(jsonResults, {depth: null})
-    const playerData = Object.values(jsonResults)[0];
-    assert(playerData.username === "Karl-Bob-Danny-Frank");
-
+    assert(jsonResults[DEFAULT_HANDLE_OPTIONS.Id].username == "Karl-Bob-Danny-Frank")
+    assert(jsonResults[ALTERNATE_HANDLE_OPTIONS.Id])
     });
 
   // it('should handle game creation', async () => {

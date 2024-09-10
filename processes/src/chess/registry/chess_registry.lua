@@ -161,10 +161,10 @@ chess_registry.init = function()
 			assert(utils.isArray(playerIds), "Player-Ids must be provided as a stringified array.")
 
 			for _, playerId in ipairs(playerIds) do
+				playerId = tostring(playerId)
 				assert(Players[playerId], "Player not found: " .. playerId)
 				playerList[playerId] = Players[playerId]
 			end
-			print("printing player list: " .. playerList)
 			-- Send requested player
 			ao.send({
 				Target = msg.From,
@@ -193,7 +193,7 @@ chess_registry.init = function()
 			},
 			username = msg.Username,
 		}
-		Players[msg.From] = playerTable
+		Players[tostring(msg.From)] = playerTable
 		-- clears the default from Players after adding a the first player
 		if Players["player id"] then
 			Players["player id"] = nil
