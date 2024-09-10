@@ -164,7 +164,7 @@ chess_registry.init = function()
 				assert(Players[playerId], "Player not found: " .. playerId)
 				playerList[playerId] = Players[playerId]
 			end
-
+			print("printing player list: " .. playerList)
 			-- Send requested player
 			ao.send({
 				Target = msg.From,

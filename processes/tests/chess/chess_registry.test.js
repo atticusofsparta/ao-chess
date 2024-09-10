@@ -10,6 +10,7 @@ import {
 describe('Chess Registry', async () => {
   let handle;
   let startMemory;
+  let registerMemory;
 
   before(async () => {
     const loader = await createChessRegistryAosLoader();
@@ -42,6 +43,7 @@ describe('Chess Registry', async () => {
     console.dir(result, {depth: null})
     assert(result.Messages[0])
     assert(result.Messages[0].Data == "Successfully registered")
+    registerMemory = result.Memory
   })
 
   it('should get player list', async () => {
@@ -52,12 +54,14 @@ describe('Chess Registry', async () => {
             value: 'Chess-Registry.Get-Players'
         }]
       
-    });
+    }, registerMemory);
     console.dir(result, {depth: null})
     assert(result.Messages[0]);
     const jsonResults = JSON.parse(result.Messages[0].Data)
     console.dir(jsonResults, {depth: null})
-    assert(jsonResults.username == "Karl-Bob-Danny-Frank")
+    const playerData = Object.values(jsonResults)[0];
+    assert(playerData.username === "Karl-Bob-Danny-Frank");
+
     });
 
   // it('should handle game creation', async () => {

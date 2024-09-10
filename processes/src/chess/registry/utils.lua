@@ -286,6 +286,7 @@ end
 -- Takes a table of player objects and compresses the game history into an array of gameIds
 -- @param {table} playerTable - Table of players, each keyed by player ID, each with a gameHistory
 function utils.compressPlayerList(playerTable)
+	print(playerTable)
 	local compressedTable = {}
 
 	-- Iterate over each player in the playerTable
@@ -294,9 +295,11 @@ function utils.compressPlayerList(playerTable)
 		local compressedGameHistory = {}
 
 		-- Iterate over the keys (game IDs) in the player's gameHistory
+		if playerData.gameHistory then
 		for gameId in pairs(playerData.gameHistory) do
 			table.insert(compressedGameHistory, gameId) -- Add the game ID to the array
 		end
+	end
 
 		-- Replace the player's gameHistory with the compressed array of game IDs
 		playerData.gameHistory = compressedGameHistory
@@ -319,7 +322,7 @@ function utils.compressPlayerList(playerTable)
 			}
 		}
 	]]
-
+assert(type(compressedTable) == "table")
 	return compressedTable
 end
 
