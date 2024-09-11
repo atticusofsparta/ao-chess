@@ -218,12 +218,18 @@ chess_registry.init = function()
 		-- ensure to include forwarded tag metadata to identify the player on the Spawned handler
 		-- (forwarded tags are X- prefixed)
 		print("CreateGame")
-		ao.spawn(ao.Process.Module.Id or "moduleid", {
+		
+		local spawned = ao.spawn(ao.env.Module.Id or "moduleid", {
 			Tags = {
-				["X-PlayerId"] = msg.PlayerId,
-				["X-GameId"] = msg.GameId,
-				["X-GameName"] = msg.GameName,
+				["X-Player-Id"] = msg["Player-Id"],
+				["X-Game-Id"] = msg["Game-Id"],
+				["X-Game-Name"] = msg["Game-Name"],
 			},
+		})
+		ao.send({
+			Target = msg.From,
+			Action = "Test-Message",
+			Data = json.encode(spawned)
 		})
 	end)
 	createActionHandler(actions.Spawned, function(msg)
