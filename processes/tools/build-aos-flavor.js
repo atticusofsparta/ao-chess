@@ -34,6 +34,13 @@ if (!existsSync(workingDir)) {
 
 // Copy the entire aos/process directory to the working directory
 const sourceDir = path.join(__dirname, '..', 'aos', 'process');
+if (!existsSync(sourceDir)) {
+  await execPromise('git submodule update --init --recursive')
+}
+if (!existsSync(sourceDir)) {
+  console.error('AOS process directory not found. Please ensure the submodule has been initialized.');
+  process.exit(1);
+}
 const destDir = path.join(workingDir, 'aos-process');
 try {
   await fs.copy(sourceDir, destDir);
@@ -81,9 +88,30 @@ async function checkAndStartDocker() {
   }
 }
 
+async function checkAoCLI() {
+  try {
+    // Check if `ao` CLI is installed by running a simple version check
+    await execPromise('ao --version');
+    console.log('ao CLI is available.');
+  } catch (err) {
+    // If the ao CLI is not installed, install it with yarn install-deps
+    console.log('ao CLI is not available. Installing dependencies with yarn install-deps...');
+    try {
+      await execPromise('yarn install-deps');
+      console.log('ao CLI has been installed successfully.');
+    } catch (installErr) {
+      console.error('Failed to install ao CLI dependencies.', installErr.message);
+      process.exit(1);
+    }
+  }
+}
+
 async function main() {
   // Check if Docker is running and start if needed
   await checkAndStartDocker();
+
+  // Check if ao CLI is installed and install if missing
+  await checkAoCLI();
 
   const bundledLua = bundle(pathToLua);
 

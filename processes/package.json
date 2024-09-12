@@ -13,7 +13,8 @@
     "aos:spawn": "node tools/spawn-aos.js",
     "test": "find ./tests -type f -name '*.test.js' -exec node --test-concurrency 1 --experimental-wasm-memory64 {} \\;",
     "evolve": "yarn aos:build && node tools/evolve.js",
-    "update-gitmodules": "git submodule update --remote --init"
+    "update-gitmodules": "git submodule update --remote --init",
+    "install-deps": "node tools/scripts/install-deps.js"
   },
   "devDependencies": {
     "@ar.io/sdk": "^2.2.0",
