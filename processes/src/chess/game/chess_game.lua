@@ -20,21 +20,30 @@ local actions = {
 chess_game.ActionMap = actions
 chess_game.init = function()
 	local json = require("json")
-	local constants = require("processes.src.common.constants")
-	local utils = require("processes.src.common.utils")
-	local createActionHandler = utils.createActionHandler
-	local Chess = require("processes.src.modules.chess")
 
-	ChessRegistry = ao.Process.Tags["Chess-Registry-Id"]
+	local utils = require(".utils")
+	local createActionHandler = utils.createActionHandler
+
+	local Chess = require('.chess')
+
+	ChessRegistry = ao.env.Process.Tags["Chess-Registry-Id"]
 	Players = {
 		white = {
-			id = ao.Process.Tags["Chess-White-Id"] or nil,
+			id = ao.env.Process.Tags["Chess-White-Id"] or nil,
 		},
 		black = {
-			id = ao.Process.Tags["Chess-Black-Id"] or nil,
+			id = ao.env.Process.Tags["Chess-Black-Id"] or nil,
 		},
 	}
 	Game = Chess()
+
+	createActionHandler("potato", function(msg)
+		ao.send({
+			Target = msg.From,
+			Action = "Test-Response",
+			Data = json.encode(ao.env.Process),
+		})
+	end)
 
 	createActionHandler(actions.GetFEN, function(msg)
 		local fen = Game:fen()

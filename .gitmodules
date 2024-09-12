@@ -1,0 +1,3 @@
+[submodule "processes/aos"]
+	path = processes/aos
+	url = https://github.com/permaweb/aos

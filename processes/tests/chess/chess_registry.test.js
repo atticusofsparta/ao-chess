@@ -119,18 +119,31 @@ describe('Chess Registry', async () => {
     assert(jsonResults[ALTERNATE_HANDLE_OPTIONS.Id].username == "Volciferon")
     });
 
-  // it('should handle game creation', async () => {
-  //   const result = await sendMessage({
-  //     Tags: 
-  //       [{
-  //           name: 'Action',
-  //           value: 'Chess-Registry.Create-Game'
-  //       }]
+  it('should handle game creation', async () => {
+    const result = await sendMessage({
+      Tags: 
+        [
+          {
+            name: 'Action',
+            value: 'Chess-Registry.Create-Game'
+          },
+          {
+            name: "Player-Id",
+            value: DEFAULT_HANDLE_OPTIONS.Id
+          },
+          {
+            name: "Game-Id",
+            value: "Test-Game-Id"
+          },
+          {
+            name: "Game-Name",
+            value: "Test-Game-Name"
+          }]
       
-  //   });
-  //   console.dir(result, {depth: null})
-  //   assert(result.Messages[0]);
+    });
+    console.dir(result, {depth: null})
+    assert(result.Spawns[0]);
 
-  // });
+  });
 
 });
