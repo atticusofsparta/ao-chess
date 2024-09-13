@@ -133,7 +133,7 @@ describe('Chess Registry', async () => {
           },
           {
             name: "Game-Id",
-            value: "Test-Game-Id"
+            value: DEFAULT_HANDLE_OPTIONS.Id
           },
           {
             name: "Game-Name",
@@ -143,7 +143,56 @@ describe('Chess Registry', async () => {
     });
     console.dir(result, {depth: null})
     assert(result.Spawns[0]);
-
+    registerMemory = result.Memory
   });
+
+  it('should get all games', async () => {
+    const result = await sendMessage({
+      Tags: [
+        { name: "Action", value: "Chess-Registry.Get-Games"},
+        { name: "Type", value: "Live"}
+      ]
+    }, registerMemory)
+    console.dir(result, {depth: null})
+    assert(result.Messages[0])
+    registerMemory = result.Memory
+  })
+
+  it('should join a player to the game', async () => {
+    const result = await sendMessage({
+      Tags: [
+        { name: "Action", value: "Chess-Registry.Join-Game"},
+        { name: "Player", value: ALTERNATE_HANDLE_OPTIONS.Id},
+        { name: "Player-Color", value: "black"}
+      ]
+    }, registerMemory)
+    console.dir(result, {depth: null})
+    const tags = result.Messages[0].Tags;
+
+    // Find the object where name is "Player-Color"
+    const actionTag = tags.find(tag => tag.name === "Action");
+
+    // Assert that the value is "black"
+    assert(actionTag && actionTag.value != "Invalid-Chess-Registry.Join-Game-Notice");
+    registerMemory = result.Memory
+  })
+
+  it('should get the specific, joined game', async () => {
+    const result = await sendMessage({
+      Tags: [
+        { name: "Action", value: "Chess-Registry.Get-Games"},
+        { name: "Game-Ids", value: JSON.stringify([DEFAULT_HANDLE_OPTIONS.Id])}
+      ]
+    }, registerMemory)
+     console.dir(result, {depth: null})
+    const tags = result.Messages[0].Tags;
+
+    // Find the object where name is "Player-Color"
+    const actionTag = tags.find(tag => tag.name === "Action");
+
+    // Assert that the value is "black"
+    assert(actionTag && actionTag.value != "Invalid-Chess-Registry.Get-Game-Notice");
+    registerMemory = result.Memory
+  })
 
 });

@@ -31,30 +31,30 @@ chess_registry.init = function()
 	local createActionHandler = utils.createActionHandler
 
 	LiveGames = {
-		["game id"] = {
-			startTimestamp = 0,
-			["players"] = {
-				["white"] = "player id",
-				["black"] = "player id",
-			},
-		},
+		-- ["game id"] = {
+		-- 	startTimestamp = 0,
+		-- 	["players"] = {
+		-- 		["white"] = "player id",
+		-- 		["black"] = "player id",
+		-- 	},
+		-- },
 	}
 	HistoricalGames = {
-		["game id"] = {
-			startTimestamp = 0,
-			endTimestamp = 0,
-			resolution = "surrender | checkmate | stalemate",
-			["players"] = {
-				["white"] = {
-					id = "player id",
-					score = 0,
-				},
-				["black"] = {
-					id = "player id",
-					score = 0,
-				},
-			},
-		},
+		-- ["game id"] = {
+			-- startTimestamp = 0,
+			-- endTimestamp = 0,
+			-- resolution = "surrender | checkmate | stalemate",
+			-- ["players"] = {
+			-- 	["white"] = {
+			-- 		id = "player id",
+			-- 		score = 0,
+			-- 	},
+			-- 	["black"] = {
+			-- 		id = "player id",
+			-- 		score = 0,
+			-- 	},
+			-- },
+		-- },
 	}
 	Players = {
 		--[[ ["player id"] = {
@@ -96,6 +96,7 @@ chess_registry.init = function()
 				Historical = {},
 			}
 			for _, gameId in ipairs(gameIds) do
+				-- assert(false, json.encode(gameId))
 				local gameData = LiveGames[gameId] or HistoricalGames[gameId]
 				assert(gameData, "Requested game not found: " .. gameId) -- Error if a game is not found
 				-- Filter games into Live or Historical
@@ -224,18 +225,21 @@ chess_registry.init = function()
 		local gameProcess = ao.spawn(ao.env.Module.Id, {
 			Tags = {
 				["X-Player-Id"] = msg.From,
-				["X-Create-Game-Id"] = msg["Id"],
+				["X-Create-Game-Id"] = msg["Game-Id"],
 				["X-Game-Name"] = msg["Game-Name"],
 				["X-Wager-Amount"] = msg["Wager-Amount"],
 				["X-Wager-Token"] = msg["Wager-Token"]
 			},
-		}).receive({ Action = "Spawned", ["X-Create-Game-Id"] = msg["Id"] })
+		})
 
 		ao.send({
 			Target = msg.From,
 			Action = "Test-Message",
 			Data = json.encode(gameProcess),
 		})
+		--TODO: how the fuck do I get the timestamps?
+		LiveGames[msg["Id"]] = {startTimestamp = 0}
+		LiveGames[msg["Id"]]['players'] = {}
 		--TODO: send join message for player who created
 	end)
 	createActionHandler(actions.Spawned, function(msg)
@@ -245,6 +249,26 @@ chess_registry.init = function()
 	end)
 	createActionHandler(actions.JoinGame, function(msg)
 		print("JoinGame")
+		assert(LiveGames[msg.From], "Joining is handled by Game processes")
+		assert(msg.Player, "Must specify player")
+
+		local playerColor = msg['Player-Color']
+		for _, tag in ipairs(msg.Tags) do
+			if tag.name == "Player-Color" then
+				playerColor = tag.value
+				break
+			end
+		end
+		assert(playerColor, "Player color must be specified")
+		-- Ensure not double joining
+		assert(not LiveGames[msg.From]['players'][playerColor], "Color is already occupied")
+		LiveGames[msg.From]['players'][playerColor] = msg.Player
+		-- Send a confirmation message
+		ao.send({
+			Target = msg.From,
+			Action = actions.JoinGame .. '-Notice',
+			Data = "Successful Join operation"
+		})
 	end)
 	createActionHandler(actions.GameResult, function(msg)
 		print("GameResult")

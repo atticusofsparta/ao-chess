@@ -104,7 +104,7 @@ chess_game.init = function()
 			Target = ChessRegistry,
 			Player = player,
 			["Player-Color"] = playerColor,
-			Action = actions.JoinGame .. "-Notice",
+			Action = "Chess-Registry.Join-Game",
 		})
 	end)
 

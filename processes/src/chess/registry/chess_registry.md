@@ -12,7 +12,7 @@ fetch the list of all games (live and historical)
 - filter by live/historical
 
 - Accepts `Game-Ids` tag to fetch a specific message by game Id. Will error if game id is not found.
-- Multiple `Game-Ids`, provided as a comma separated string, are accepted.
+- Multiple `Game-Ids`, provided as a stringified array, are accepted.
 - Accepts `Player-Id` tag to fetch all games (live and historical) for a specific player. Will error if Player Id is not found.
 - Returns all games if neither `Game-Id` or `Player-Id` is provided
 
@@ -57,8 +57,8 @@ Spawned is a reserved action handler name in aos that is sent to a parent proces
 
 Use the forwarded tags to identify the game creator and update the games and players tables appropriately
 
-#### `Chess-Registry.Join-Game`
-Message handler for when opponent joins a game, only accessible by the spawned game process, which sends the message to the chess registry after a player joins
+#### `Chess-Registry.Join-Game-Notice`
+Message handler for when a player joins a game, only accessible by the spawned game process, which sends the message to the chess registry after a player joins
 - add the game to the opponents list
 
 #### `Chess-Registry.Game-Result`
