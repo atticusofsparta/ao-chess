@@ -3,10 +3,12 @@ if pcall(require, "bit") then
 	bit = require("bit")
 elseif pcall(require, "bit32") then
 	bit = require("bit32")
-elseif _VERSION >= "Lua 5.3" then
-	bit = require((...):match("(.-)[^%/]+$") .. "lua53bit")
-else
-	bit = require((...):match("(.-)[^%/]+$") .. "nobitop")
+	-- elseif _VERSION >= "Lua 5.3" then
+	-- 	local path = (...):match("(.-)[^%/]+$") or ""
+	-- 	bit = require(path .. "lua53bit")
+	-- else
+	-- 	local path = (...):match("(.-)[^%/]+$") or ""
+	-- 	bit = require(path .. "nobitop")
 end
 
 local BLACK = "b"

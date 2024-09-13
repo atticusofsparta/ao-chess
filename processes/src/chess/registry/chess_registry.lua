@@ -21,8 +21,10 @@ local actions = {
 	Spawned = "Spawned", -- reserved name for aos spawned process that the spawned process calls back when it is ready
 	JoinGame = "Chess-Registry.Join-Game",
 	GameResult = "Chess-Registry.Game-Result",
+	UpdateGameModuleId = "Chess-Registry.Update-Game-Module-Id"
 }
 chess_registry.ActionMap = actions
+ChessGameModuleId = ""
 chess_registry.init = function()
 	local constants = require(".constants")
 	local utils = require(".utils")
@@ -210,7 +212,7 @@ chess_registry.init = function()
 		ao.send({
 			Target = msg.From,
 			Action = actions.EditProfile .. "-Notice",
-			Data = "Username updated"
+			Data = "Username updated",
 		})
 	end)
 	createActionHandler(actions.CreateGame, function(msg)
@@ -218,19 +220,23 @@ chess_registry.init = function()
 		-- ensure to include forwarded tag metadata to identify the player on the Spawned handler
 		-- (forwarded tags are X- prefixed)
 		print("CreateGame")
-		
-		local spawned = ao.spawn(ao.env.Module.Id or "moduleid", {
+
+		local gameProcess = ao.spawn(ao.env.Module.Id, {
 			Tags = {
-				["X-Player-Id"] = msg["Player-Id"],
-				["X-Game-Id"] = msg["Game-Id"],
+				["X-Player-Id"] = msg.From,
+				["X-Create-Game-Id"] = msg["Id"],
 				["X-Game-Name"] = msg["Game-Name"],
+				["X-Wager-Amount"] = msg["Wager-Amount"],
+				["X-Wager-Token"] = msg["Wager-Token"]
 			},
-		})
+		}).receive({ Action = "Spawned", ["X-Create-Game-Id"] = msg["Id"] })
+
 		ao.send({
 			Target = msg.From,
 			Action = "Test-Message",
-			Data = json.encode(spawned)
+			Data = json.encode(gameProcess),
 		})
+		--TODO: send join message for player who created
 	end)
 	createActionHandler(actions.Spawned, function(msg)
 		-- add game ID and player ID to the LiveGames table
@@ -243,6 +249,16 @@ chess_registry.init = function()
 	createActionHandler(actions.GameResult, function(msg)
 		print("GameResult")
 	end)
+
+	createActionHandler(actions.UpdateGameModuleId, function(msg)
+	ao.send({
+		Target = msg.Process,
+
+	})
+	
+	end)
 end
+
+	
 
 return chess_registry
