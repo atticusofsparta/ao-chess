@@ -195,4 +195,14 @@ describe('Chess Registry', async () => {
     registerMemory = result.Memory
   })
 
+  it('should update module-id', async () => {
+    const result = await sendMessage({
+      Tags: [
+        { name: "Action", value: "Chess-Registry.Update-Game-Module-Id"},
+        { name: 'Module-Id', value: "7"}
+      ]
+    }, registerMemory)
+    console.dir(result, {depth: null})
+    assert(!result.Messages[0].Error)
+  })
 });
