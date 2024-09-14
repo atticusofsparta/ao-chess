@@ -66,3 +66,7 @@ Returns the final score and winner of the game
 - calculate new ELO's and update both players elo and set them to the players profiles
 - update the status of the game as complete and move the the historical games list
 - set the wins, losses, stalemates, and surrenders appropriately
+
+#### `Chess-Registry.Update-Game-Module-Id`
+Updates the module Id of spawned game processes
+- errors if called by anyone other than registry owner

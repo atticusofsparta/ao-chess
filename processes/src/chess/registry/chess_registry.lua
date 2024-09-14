@@ -222,13 +222,14 @@ chess_registry.init = function()
 		-- (forwarded tags are X- prefixed)
 		print("CreateGame")
 
-		local gameProcess = ao.spawn(ao.env.Module.Id, {
+		local gameProcess = ao.spawn(ChessGameModuleId {
 			Tags = {
-				["X-Player-Id"] = msg.From,
-				["X-Create-Game-Id"] = msg["Game-Id"],
-				["X-Game-Name"] = msg["Game-Name"],
-				["X-Wager-Amount"] = msg["Wager-Amount"],
-				["X-Wager-Token"] = msg["Wager-Token"]
+				["Chess-Registry-Id"] = ao.id,
+				["Player-Id"] = msg.From,
+				["Create-Game-Id"] = msg["Game-Id"],
+				["Game-Name"] = msg["Game-Name"],
+				["Wager-Amount"] = msg["Wager-Amount"],
+				["Wager-Token"] = msg["Wager-Token"]
 			},
 		})
 
@@ -238,7 +239,7 @@ chess_registry.init = function()
 			Data = json.encode(gameProcess),
 		})
 		--TODO: how the fuck do I get the timestamps?
-		LiveGames[msg["Id"]] = {startTimestamp = 0}
+		LiveGames[msg["Id"]] = {startTimestamp = tostring(msg.Timestamp)}
 		LiveGames[msg["Id"]]['players'] = {}
 		--TODO: send join message for player who created
 	end)
@@ -261,7 +262,7 @@ chess_registry.init = function()
 		end
 		assert(playerColor, "Player color must be specified")
 		-- Ensure not double joining
-		assert(not LiveGames[msg.From]['players'][playerColor], "Color is already occupied")
+		assert(not LiveGames[msg.From]['players'][playerColor], "Color " .. playerColor .. "is already occupied")
 		LiveGames[msg.From]['players'][playerColor] = msg.Player
 		-- Send a confirmation message
 		ao.send({
@@ -275,11 +276,14 @@ chess_registry.init = function()
 	end)
 
 	createActionHandler(actions.UpdateGameModuleId, function(msg)
-	ao.send({
-		Target = msg.Process,
-
-	})
-	
+		assert(msg.From == ao.env.Process.Owner, "Unauthorized")
+		assert(msg['Module-Id'] and type(msg['Module-Id']) == 'string')
+		ChessGameModuleId = msg['Module-Id']
+		ao.send({
+			Target = msg.From,
+			Action = actions.UpdateGameModuleId .. '-Notice',
+			Data = 'Successfully updated Module Id to ' .. ChessGameModuleId
+		})
 	end)
 end
 

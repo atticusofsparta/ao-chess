@@ -26,30 +26,31 @@ chess_game.init = function()
 	local createActionHandler = utils.createActionHandler
 	local createForwardedActionHandler = utils.createForwardedActionHandler
 
-	local Chess = require('.chess')
+	local Chess = require(".chess")
 
 	ChessRegistry = ao.env.Process.Tags["Chess-Registry-Id"]
 	Players = {
-		wager = {amount = nil, token = nil},
+		wager = {
+			amount = tonumber(ao.env.Process.Tags["X-Wager-Amount"]) or nil,
+			token = ao.env.Process.Tags["Wager-Token"],
+		},
 		white = {
 			id = ao.env.Process.Tags["Chess-White-Id"] or nil,
-			wagerPaid = nil
+			wagerPaid = nil,
 		},
 		black = {
 			id = ao.env.Process.Tags["Chess-Black-Id"] or nil,
-			wagerPaid = nil
+			wagerPaid = nil,
 		},
 	}
 	Game = Chess()
-	Players.wager.amount = tonumber(ao.env.Process.Tags['X-Wager-Amount']) or nil
-	Players.wager.token = ao.env.Process.Tags['X-Wager-Token']
 
 	createActionHandler(actions.TestResponsiveness, function(msg)
 		ao.send({
 			Target = msg.From,
 			Action = "Test-Response",
 			Data = json.encode(ao.env.Process),
-			Players = json.encode(Players)
+			Players = json.encode(Players),
 		})
 	end)
 
@@ -76,7 +77,7 @@ chess_game.init = function()
 		assert(not Players.wager.amount)
 		-- ensure Player not already in game
 		assert(msg.From ~= Players.white.id and msg.From ~= Players.black.id, "Player already joined this game")
-		local player = msg['X-Player-Id'] or msg.From
+		local player = msg["X-Player-Id"] or msg.From
 		local playerColor = nil
 		--TODO: Allow users to specify color
 		if not Players.white.id then
@@ -111,7 +112,10 @@ chess_game.init = function()
 	createForwardedActionHandler(actions.JoinWagerGame, function(msg)
 		assert(Players.wager.amount, "Please use the Standard Join method")
 		-- Ensure Player not already joined
-		assert(msg.From ~= Players.white.id and msg.From ~= Players.black.id, "Player already joined this game, no refund")
+		assert(
+			msg.From ~= Players.white.id and msg.From ~= Players.black.id,
+			"Player already joined this game, no refund"
+		)
 		assert(tonumber(msg.Quantity) == tonumber(Players.wager.amount), "Improper wager amount, you get no refund")
 		assert(Players.wager.token == msg.From, "Improper token")
 
@@ -130,14 +134,14 @@ chess_game.init = function()
 			ao.send({
 				Target = player,
 				Data = "Game is full",
-				Action = "Chess-Game.Join-Game-Notice",
+				Action = actions.JoinWagerGame .. "-Notice",
 			})
 			ao.send({
 				Target = msg.From,
 				Quantity = msg.Quantity,
 				Recipient = msg.Sender,
 				Action = "Transfer",
-				['X-Notice'] = "Refund for failed join attempt"
+				["X-Notice"] = "Refund for failed join attempt",
 			})
 
 			return
@@ -146,7 +150,7 @@ chess_game.init = function()
 		ao.send({
 			Target = player,
 			Data = "You have joined game [" .. ao.id .. "]" .. " as " .. playerColor,
-			Action = actions.JoinGame .. "-Notice",
+			Action = actions.JoinWagerGame .. "-Notice",
 			["Player-Color"] = playerColor,
 		})
 		ao.send({
@@ -155,7 +159,6 @@ chess_game.init = function()
 			["Player-Color"] = playerColor,
 			Action = actions.JoinGame .. "-Notice",
 		})
-	
 	end)
 
 	createActionHandler(actions.Move, function(msg)
