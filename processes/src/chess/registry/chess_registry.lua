@@ -184,43 +184,58 @@ chess_registry.init = function()
 			})
 		end
 	end)
-	createActionHandler(actions.JoinRegistry, function(msg)
-		print("JoinRegistry")
-		assert(not Players[msg.From], "Player already registered")
-		local playerTable = {
-			stats = {
-				elo = constants.DEFAULT_ELO,
-				wins = 0,
-				losses = 0,
-				stalemates = 0,
-				surrenders = 0,
-			},
-			username = msg.Username,
-		}
-		Players[tostring(msg.From)] = playerTable
-		ao.send({
-			Target = msg.From,
-			Action = actions.JoinRegistry .. "-Notice",
-			Data = "Successfully registered",
-		})
-	end)
-	createActionHandler(actions.EditProfile, function(msg)
-		print("EditProfile")
-		assert(Players[msg.From], "No profile exists for " .. msg.From)
-		assert(type(msg.Username) == "string", "Must provide new Username")
+	-- createActionHandler(actions.JoinRegistry, function(msg)
+	-- 	print("JoinRegistry")
+	-- 	assert(not Players[msg.From], "Player already registered")
+	-- 	local playerTable = {
+	-- 		stats = {
+	-- 			elo = constants.DEFAULT_ELO,
+	-- 			wins = 0,
+	-- 			losses = 0,
+	-- 			stalemates = 0,
+	-- 			surrenders = 0,
+	-- 		},
+	-- 		username = msg.Username,
+	-- 	}
+	-- 	Players[tostring(msg.From)] = playerTable
+	-- 	ao.send({
+	-- 		Target = msg.From,
+	-- 		Action = actions.JoinRegistry .. "-Notice",
+	-- 		Data = "Successfully registered",
+	-- 	})
+	-- end)
+	-- createActionHandler(actions.EditProfile, function(msg)
+	-- 	print("EditProfile")
+	-- 	assert(Players[msg.From], "No profile exists for " .. msg.From)
+	-- 	assert(type(msg.Username) == "string", "Must provide new Username")
 
-		Players[msg.From].username = msg.Username
-		ao.send({
-			Target = msg.From,
-			Action = actions.EditProfile .. "-Notice",
-			Data = "Username updated",
-		})
-	end)
+	-- 	Players[msg.From].username = msg.Username
+	-- 	ao.send({
+	-- 		Target = msg.From,
+	-- 		Action = actions.EditProfile .. "-Notice",
+	-- 		Data = "Username updated",
+	-- 	})
+	-- end)
 	createActionHandler(actions.CreateGame, function(msg)
 		-- msg.GameName
 		-- ensure to include forwarded tag metadata to identify the player on the Spawned handler
 		-- (forwarded tags are X- prefixed)
 		print("CreateGame")
+		if not Players[msg.From] then
+			local playerTable = {
+				stats = {
+					elo = constants.DEFAULT_ELO,
+					wins = 0,
+					losses = 0,
+					stalemates = 0,
+					surrenders = 0,
+				},
+				username = msg.Username,
+			}
+			Players[tostring(msg.From)] = playerTable
+		end
+
+		assert(Players[msg.From], "Player not registered")
 
 		local gameProcess = ao.spawn(ChessGameModuleId,{
 			Tags = {
@@ -252,6 +267,22 @@ chess_registry.init = function()
 		print("JoinGame")
 		assert(LiveGames[msg.From], "Joining is handled by Game processes")
 		assert(msg.Player, "Must specify player")
+
+		if not Players[msg[Player]] then
+			local playerTable = {
+				stats = {
+					elo = constants.DEFAULT_ELO,
+					wins = 0,
+					losses = 0,
+					stalemates = 0,
+					surrenders = 0,
+				},
+				username = msg.Username,
+			}
+			Players[tostring(msg.Player)] = playerTable
+		end
+
+		assert(Players[msg.Player], "Player not registerd")
 
 		local playerColor = msg["Player-Color"]
 		for _, tag in ipairs(msg.Tags) do

@@ -32,14 +32,14 @@ fetch all players
 
 ### Write
 
-#### `Chess-Registry.Join-Registry`
+#### `Chess-Registry.Join-Registry`  -- REMOVED
 registers a new player to the registry
 - Accepts optional `Username` tag
 - set default elo of 1500
 - will error if user already registered
 - Data in response message is "Successfully registered"
 
-#### `Chess-Registry.Edit-Profile`
+#### `Chess-Registry.Edit-Profile` -- REMOVED
 update friendly name of registered profile
 - Accept `Username` tag
 - Player profile for sending wallet will be updated with new username
@@ -51,6 +51,7 @@ update friendly name of registered profile
 Spawn a new game process and record the ID in the games registry
 - add the game id to the live games list
 - add the game id to the creators game list
+- will add creator to Players list if not already there
 
 #### `Spawned`
 Spawned is a reserved action handler name in aos that is sent to a parent process from a child process it spawned.
@@ -60,6 +61,7 @@ Use the forwarded tags to identify the game creator and update the games and pla
 #### `Chess-Registry.Join-Game-Notice`
 Message handler for when a player joins a game, only accessible by the spawned game process, which sends the message to the chess registry after a player joins
 - add the game to the opponents list
+- Will add player to Players list if not already there
 
 #### `Chess-Registry.Game-Result`
 Returns the final score and winner of the game
