@@ -101,6 +101,16 @@ describe('Chess Game', async () => {
     startMemory = result.Memory
   })
 
-  
+  it('should submit a move', async () => {
+    const moveObject = {from: 'e2', to: 'e3'}
+    const result = await sendMessage({
+      Data: JSON.stringify(moveObject),
+      Tags: [
+        { name: "Action", value: "Chess-Game.Move"},
+      ]
+    }, startMemory)
+      console.dir(result, {depth: null})
+  })
+
 
 });

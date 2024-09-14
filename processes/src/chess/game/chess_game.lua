@@ -44,6 +44,7 @@ chess_game.init = function()
 		},
 	}
 	Game = Chess()
+	math.randomseed(os.time())
 
 	createActionHandler(actions.TestResponsiveness, function(msg)
 		ao.send({
@@ -55,7 +56,7 @@ chess_game.init = function()
 	end)
 
 	createActionHandler(actions.GetFEN, function(msg)
-		local fen = Game:fen()
+		local fen = Game.fen()
 		ao.send({
 			Target = msg.From,
 			Data = fen,
@@ -64,7 +65,7 @@ chess_game.init = function()
 	end)
 
 	createActionHandler(actions.GetPGN, function(msg)
-		local pgn = Game:pgn()
+		local pgn = Game.pgn()
 		ao.send({
 			Target = msg.From,
 			Data = pgn,
@@ -164,35 +165,50 @@ chess_game.init = function()
 	createActionHandler(actions.Move, function(msg)
 		local player = msg.From
 		assert(player == Players.white.id or player == Players.black.id, "Player is not in the game")
+		assert(Players.white.id and Players.black.id, "Game not ready")
+		assert(msg.Data, json.encode(msg))
 		local move = json.decode(msg.Data)
 		-- assert move is valid
-		local result = Game:move(move)
-		local isGameOver, resolution = Game:game_over()
-
+		local result = Game.move(move)
+		assert(result, "Invalid move")
+		local isGameOver, resolution, reason = Game.game_over()
 		-- need to generate scores
 		-- not included in chess module, so will need to track manually when a piece is taken
 
 		-- notify players
 		ao.send({
 			Target = Players.white.id,
-			Data = Game:fen(),
+			Data = Game.fen(),
 			Action = "Chess-Game.Move-Notice",
 		})
 		ao.send({
 			Target = Players.black.id,
-			Data = Game:fen(),
+			Data = Game.fen(),
 			Action = "Chess-Game.Move-Notice",
 		})
 
 		if isGameOver then
+			local winner
+			assert(resolution, "Internal error")
+			assert(reason, "Internal error")
+			if resolution == "1-0" then
+				winner = "white"
+			elseif resolution == "0-1" then
+				winner = "black"
+			else
+				winner = "draw"
+			end
 			ao.send({
 				Target = ChessRegistry,
-				Data = {
-					-- ... send points and resolution
-				},
-				Action = "Chess-Registry.Game-Result",
+				Data = json.encode({
+					Winner = winner,
+					Reason = reason,
+					["Final-Game-State"] = Game.fen()
+				}),
+				Action = "Chess-Registry.Game-Result-Notice",
 			})
 		end
+		print(Game.ascii())
 	end)
 end
 

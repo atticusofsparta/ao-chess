@@ -276,7 +276,7 @@ chess_registry.init = function()
 	end)
 
 	createActionHandler(actions.UpdateGameModuleId, function(msg)
-		assert(msg.From == ao.env.Process.Owner, "Unauthorized")
+		assert(msg.From == Owner, "Unauthorized")
 		assert(msg["Module-Id"] and type(msg["Module-Id"]) == "string")
 		ChessGameModuleId = msg["Module-Id"]
 		ao.send({

@@ -2179,7 +2179,7 @@ local function ctor(_m, start_fen)
 		in_threefold_repetition = in_threefold_repetition,
 		game_over = function()
 			if in_checkmate() then
-				return true, self_turn == WHITE and "0-1" or "1-0"
+				return true, self_turn == WHITE and "0-1" or "1-0", "Checkmate"
 			end
 
 			if in_stalemate() then
