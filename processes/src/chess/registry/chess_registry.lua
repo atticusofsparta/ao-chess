@@ -21,10 +21,10 @@ local actions = {
 	Spawned = "Spawned", -- reserved name for aos spawned process that the spawned process calls back when it is ready
 	JoinGame = "Chess-Registry.Join-Game",
 	GameResult = "Chess-Registry.Game-Result",
-	UpdateGameModuleId = "Chess-Registry.Update-Game-Module-Id"
+	UpdateGameModuleId = "Chess-Registry.Update-Game-Module-Id",
 }
 chess_registry.ActionMap = actions
-ChessGameModuleId = ""
+ChessGameModuleId = ao.env.Module.Id
 chess_registry.init = function()
 	local constants = require(".constants")
 	local utils = require(".utils")
@@ -41,19 +41,19 @@ chess_registry.init = function()
 	}
 	HistoricalGames = {
 		-- ["game id"] = {
-			-- startTimestamp = 0,
-			-- endTimestamp = 0,
-			-- resolution = "surrender | checkmate | stalemate",
-			-- ["players"] = {
-			-- 	["white"] = {
-			-- 		id = "player id",
-			-- 		score = 0,
-			-- 	},
-			-- 	["black"] = {
-			-- 		id = "player id",
-			-- 		score = 0,
-			-- 	},
-			-- },
+		-- startTimestamp = 0,
+		-- endTimestamp = 0,
+		-- resolution = "surrender | checkmate | stalemate",
+		-- ["players"] = {
+		-- 	["white"] = {
+		-- 		id = "player id",
+		-- 		score = 0,
+		-- 	},
+		-- 	["black"] = {
+		-- 		id = "player id",
+		-- 		score = 0,
+		-- 	},
+		-- },
 		-- },
 	}
 	Players = {
@@ -222,14 +222,14 @@ chess_registry.init = function()
 		-- (forwarded tags are X- prefixed)
 		print("CreateGame")
 
-		local gameProcess = ao.spawn(ChessGameModuleId {
+		local gameProcess = ao.spawn(ChessGameModuleId,{
 			Tags = {
 				["Chess-Registry-Id"] = ao.id,
 				["Player-Id"] = msg.From,
 				["Create-Game-Id"] = msg["Game-Id"],
 				["Game-Name"] = msg["Game-Name"],
 				["Wager-Amount"] = msg["Wager-Amount"],
-				["Wager-Token"] = msg["Wager-Token"]
+				["Wager-Token"] = msg["Wager-Token"],
 			},
 		})
 
@@ -239,8 +239,8 @@ chess_registry.init = function()
 			Data = json.encode(gameProcess),
 		})
 		--TODO: how the fuck do I get the timestamps?
-		LiveGames[msg["Id"]] = {startTimestamp = tostring(msg.Timestamp)}
-		LiveGames[msg["Id"]]['players'] = {}
+		LiveGames[msg["Id"]] = { startTimestamp = tostring(msg.Timestamp) }
+		LiveGames[msg["Id"]]["players"] = {}
 		--TODO: send join message for player who created
 	end)
 	createActionHandler(actions.Spawned, function(msg)
@@ -253,7 +253,7 @@ chess_registry.init = function()
 		assert(LiveGames[msg.From], "Joining is handled by Game processes")
 		assert(msg.Player, "Must specify player")
 
-		local playerColor = msg['Player-Color']
+		local playerColor = msg["Player-Color"]
 		for _, tag in ipairs(msg.Tags) do
 			if tag.name == "Player-Color" then
 				playerColor = tag.value
@@ -262,13 +262,13 @@ chess_registry.init = function()
 		end
 		assert(playerColor, "Player color must be specified")
 		-- Ensure not double joining
-		assert(not LiveGames[msg.From]['players'][playerColor], "Color " .. playerColor .. "is already occupied")
-		LiveGames[msg.From]['players'][playerColor] = msg.Player
+		assert(not LiveGames[msg.From]["players"][playerColor], "Color " .. playerColor .. "is already occupied")
+		LiveGames[msg.From]["players"][playerColor] = msg.Player
 		-- Send a confirmation message
 		ao.send({
 			Target = msg.From,
-			Action = actions.JoinGame .. '-Notice',
-			Data = "Successful Join operation"
+			Action = actions.JoinGame .. "-Notice",
+			Data = "Successful Join operation",
 		})
 	end)
 	createActionHandler(actions.GameResult, function(msg)
@@ -277,16 +277,14 @@ chess_registry.init = function()
 
 	createActionHandler(actions.UpdateGameModuleId, function(msg)
 		assert(msg.From == ao.env.Process.Owner, "Unauthorized")
-		assert(msg['Module-Id'] and type(msg['Module-Id']) == 'string')
-		ChessGameModuleId = msg['Module-Id']
+		assert(msg["Module-Id"] and type(msg["Module-Id"]) == "string")
+		ChessGameModuleId = msg["Module-Id"]
 		ao.send({
 			Target = msg.From,
-			Action = actions.UpdateGameModuleId .. '-Notice',
-			Data = 'Successfully updated Module Id to ' .. ChessGameModuleId
+			Action = actions.UpdateGameModuleId .. "-Notice",
+			Data = "Successfully updated Module Id to " .. ChessGameModuleId,
 		})
 	end)
 end
-
-	
 
 return chess_registry
