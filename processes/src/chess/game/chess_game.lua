@@ -170,7 +170,7 @@ chess_game.init = function()
 		local move = json.decode(msg.Data)
 		-- assert move is valid
 		local result = Game.move(move)
-		assert(result, "Invalid move")
+		assert(result, "Invalid move: " .. json.encode(move))
 		local isGameOver, resolution, reason = Game.game_over()
 		-- need to generate scores
 		-- not included in chess module, so will need to track manually when a piece is taken
@@ -208,7 +208,6 @@ chess_game.init = function()
 				Action = "Chess-Registry.Game-Result-Notice",
 			})
 		end
-		print(Game.ascii())
 	end)
 end
 

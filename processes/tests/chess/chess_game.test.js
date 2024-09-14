@@ -101,8 +101,8 @@ describe('Chess Game', async () => {
     startMemory = result.Memory
   })
 
-  it('should submit a move', async () => {
-    const moveObject = {from: 'e2', to: 'e3'}
+  it('should submit the first move', async () => {
+    const moveObject = {from: 'e2', to: 'e4'}
     const result = await sendMessage({
       Data: JSON.stringify(moveObject),
       Tags: [
@@ -110,7 +110,87 @@ describe('Chess Game', async () => {
       ]
     }, startMemory)
       console.dir(result, {depth: null})
+      assert(result.Messages[0])
+
+    const tags = result.Messages[0].Tags;
+
+    // Find the object where name is "Player-Color"
+    const errorTag = tags.find(tag => tag.name === "Action");
+
+    // Assert that the value is "black"
+    assert(errorTag && errorTag.value === "Chess-Game.Move-Notice");
+      startMemory = result.Memory
   })
 
+  it('should submit the second move', async () => {
+    const moveObject = {from: 'e7', to: 'e5'}
+    const result = await alternateSendMessage({
+      Data: JSON.stringify(moveObject),
+      Tags: [
+        { name: "Action", value: "Chess-Game.Move"},
+      ]
+    }, startMemory)
+      console.dir(result, {depth: null})
+      assert(result.Messages[0])
 
+    const tags = result.Messages[0].Tags;
+
+    // Find the object where name is "Player-Color"
+    const errorTag = tags.find(tag => tag.name === "Action");
+
+    // Assert that the value is "black"
+    assert(errorTag && errorTag.value === "Chess-Game.Move-Notice");
+      startMemory = result.Memory
+  })
+
+   it('should finish a game and get the results', async () => {
+    const expectedResultString = '{"Winner":"white","Reason":"Checkmate","Final-Game-State":"r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4"}'
+    const firstMoveObject = {from: 'f1', to: 'c4'}
+    const secondMoveObject = {from: 'g8', to: 'f6'}
+    const thirdMoveobject = {from: 'd1', to: 'h5'}
+    const fourthMoveObject = {from: 'b8', to: 'c6'}
+    const lastMoveobject = {from: 'h5', to: 'f7'}
+    const result = await sendMessage({
+      Data: JSON.stringify(firstMoveObject),
+      Tags: [
+        { name: "Action", value: "Chess-Game.Move"},
+      ]
+    }, startMemory)
+      startMemory = result.Memory
+
+      const result2 = await alternateSendMessage({
+        Data: JSON.stringify(secondMoveObject),
+        Tags: [
+          { name: "Action", value: "Chess-Game.Move"}
+        ]
+      }, startMemory)
+    startMemory = result2.Memory
+
+    const result3 = await sendMessage({
+        Data: JSON.stringify(thirdMoveobject),
+        Tags: [
+          { name: "Action", value: "Chess-Game.Move"}
+        ]
+      }, startMemory)
+    startMemory = result3.Memory
+
+    const result4 = await alternateSendMessage({
+        Data: JSON.stringify(fourthMoveObject),
+        Tags: [
+          { name: "Action", value: "Chess-Game.Move"}
+        ]
+      }, startMemory)
+    startMemory = result4.Memory
+
+
+  const result5 = await sendMessage({
+        Data: JSON.stringify(lastMoveobject),
+        Tags: [
+          { name: "Action", value: "Chess-Game.Move"}
+        ]
+      }, startMemory)
+    startMemory = result5.Memory
+      console.dir(result5, {depth: null})
+      assert(result5.Messages[2] && result5.Messages[2].Data == expectedResultString)
+    })
 });
