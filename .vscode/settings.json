@@ -17,10 +17,13 @@
     "**/dist": true,
     "**/coverage": true
   },
-  "Lua.workspace.checkThirdParty": true,
+  "Lua.workspace.checkThirdParty": false,
   "[lua]": {
     "editor.defaultFormatter": "JohnnyMorganz.stylua",
     "editor.formatOnSave": true,
   },
+  "Lua.workspace.library": [
+    "/home/stephen/.config/Code/User/globalStorage/sumneko.lua/addonManager/addons/ao/module/library"
+  ],
     
 }

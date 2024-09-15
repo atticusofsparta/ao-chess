@@ -24,7 +24,7 @@ local actions = {
 	UpdateGameModuleId = "Chess-Registry.Update-Game-Module-Id",
 }
 chess_registry.ActionMap = actions
-ChessGameModuleId = ao.env.Module.Id
+ChessGameModuleId = "IiZKxvWj3JYAEksUySh8Rvidq1HxpGey0xYQFfC72K8"
 chess_registry.init = function()
 	local constants = require(".constants")
 	local utils = require(".utils")
@@ -238,25 +238,25 @@ chess_registry.init = function()
 
 		assert(Players[msg.From], "Player not registered")
 
-		local gameProcess = ao.spawn(ChessGameModuleId, {
+		local gameProcess = Spawn(ChessGameModuleId, {
 			Tags = {
 				["Chess-Registry-Id"] = ao.id,
 				["Player-Id"] = msg.From,
-				["Create-Game-Id"] = msg["Game-Id"],
+				["X-Create-Game-Id"] = msg["Id"],
 				["Game-Name"] = msg["Game-Name"],
 				["Wager-Amount"] = msg["Wager-Amount"],
 				["Wager-Token"] = msg["Wager-Token"],
 			},
-		})
+		}).receive({['X-Create-Game-Id'] = msg["Id"]})
 
 		ao.send({
 			Target = msg.From,
 			Action = "Test-Message",
-			Data = json.encode(gameProcess),
+			Data = gameProcess.Process,
 		})
-		--TODO: how the fuck do I get the timestamps?
-		LiveGames[msg["Id"]] = { startTimestamp = tostring(msg.Timestamp) }
-		LiveGames[msg["Id"]]["players"] = {}
+
+		LiveGames[gameProcess.Process] = { startTimestamp = tostring(msg.Timestamp) }
+		LiveGames[gameProcess.Process]["players"] = {}
 		--TODO: send join message for player who created
 	end)
 	createActionHandler(actions.Spawned, function(msg)
@@ -422,7 +422,7 @@ chess_registry.init = function()
 	end
 
 	createActionHandler(actions.UpdateGameModuleId, function(msg)
-		assert(msg.From == Owner, "Unauthorized")
+		assert(msg.From == Owner or msg.From == ao.id, "Unauthorized")
 		assert(msg["Module-Id"] and type(msg["Module-Id"]) == "string")
 		ChessGameModuleId = msg["Module-Id"]
 		ao.send({

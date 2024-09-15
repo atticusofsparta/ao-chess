@@ -1,6 +1,7 @@
 {
   "type": "module",
   "scripts": {
+     "module:publish": "cd dist/chess/game && ao publish process.wasm -w ~/Documents/code/notMyKeyFile.json --tag=\"Memory-Limit\" --value=\"1-gb\" --tag=\"Compute-Limit\" --value=\"9000000000000\"  --tag=\"Input-Encoding\" --value=\"JSON-1\" --tag=\"Output-Encoding\" --value=\"JSON-1\" && cd ../../..",
     "chess-game:build": "node tools/bundle-aos.js --path=\"./src/chess/game/aos.lua\" --output=\"./dist/chess/game/aos-bundled.lua\"",
     "chess-game:build-aos-flavor": "node tools/build-aos-flavor.js --path=\"./src/chess/game/aos.lua\" --output=\"./dist/chess/game/\"",
     "chess-registry:build": "node tools/bundle-aos.js --path=\"./src/chess/registry/aos.lua\" --output=\"./dist/chess/registry/aos-bundled.lua\"",
