@@ -3,10 +3,12 @@ if pcall(require, "bit") then
 	bit = require("bit")
 elseif pcall(require, "bit32") then
 	bit = require("bit32")
-elseif _VERSION >= "Lua 5.3" then
-	bit = require((...):match("(.-)[^%/]+$") .. "lua53bit")
-else
-	bit = require((...):match("(.-)[^%/]+$") .. "nobitop")
+	-- elseif _VERSION >= "Lua 5.3" then
+	-- 	local path = (...):match("(.-)[^%/]+$") or ""
+	-- 	bit = require(path .. "lua53bit")
+	-- else
+	-- 	local path = (...):match("(.-)[^%/]+$") or ""
+	-- 	bit = require(path .. "nobitop")
 end
 
 local BLACK = "b"
@@ -2177,7 +2179,7 @@ local function ctor(_m, start_fen)
 		in_threefold_repetition = in_threefold_repetition,
 		game_over = function()
 			if in_checkmate() then
-				return true, self_turn == WHITE and "0-1" or "1-0"
+				return true, self_turn == WHITE and "0-1" or "1-0", "Checkmate"
 			end
 
 			if in_stalemate() then
