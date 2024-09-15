@@ -24,7 +24,7 @@ local actions = {
 	UpdateGameModuleId = "Chess-Registry.Update-Game-Module-Id",
 }
 chess_registry.ActionMap = actions
-ChessGameModuleId = "IiZKxvWj3JYAEksUySh8Rvidq1HxpGey0xYQFfC72K8"
+ChessGameModuleId = "xPH0SKCjntyp7R5-lxWT676bOvQRuSupB5OOHtrOcb8"
 chess_registry.init = function()
 	local constants = require(".constants")
 	local utils = require(".utils")
@@ -184,43 +184,9 @@ chess_registry.init = function()
 			})
 		end
 	end)
-	-- createActionHandler(actions.JoinRegistry, function(msg)
-	-- 	print("JoinRegistry")
-	-- 	assert(not Players[msg.From], "Player already registered")
-	-- 	local playerTable = {
-	-- 		stats = {
-	-- 			elo = constants.DEFAULT_ELO,
-	-- 			wins = 0,
-	-- 			losses = 0,
-	-- 			stalemates = 0,
-	-- 			surrenders = 0,
-	-- 		},
-	-- 		username = msg.Username,
-	-- 	}
-	-- 	Players[tostring(msg.From)] = playerTable
-	-- 	ao.send({
-	-- 		Target = msg.From,
-	-- 		Action = actions.JoinRegistry .. "-Notice",
-	-- 		Data = "Successfully registered",
-	-- 	})
-	-- end)
-	-- createActionHandler(actions.EditProfile, function(msg)
-	-- 	print("EditProfile")
-	-- 	assert(Players[msg.From], "No profile exists for " .. msg.From)
-	-- 	assert(type(msg.Username) == "string", "Must provide new Username")
 
-	-- 	Players[msg.From].username = msg.Username
-	-- 	ao.send({
-	-- 		Target = msg.From,
-	-- 		Action = actions.EditProfile .. "-Notice",
-	-- 		Data = "Username updated",
-	-- 	})
-	-- end)
 	createActionHandler(actions.CreateGame, function(msg)
-		-- msg.GameName
-		-- ensure to include forwarded tag metadata to identify the player on the Spawned handler
-		-- (forwarded tags are X- prefixed)
-		print("CreateGame")
+
 		if not Players[msg.From] then
 			local playerTable = {
 				stats = {
@@ -249,6 +215,8 @@ chess_registry.init = function()
 			},
 		}).receive({['X-Create-Game-Id'] = msg["Id"]})
 
+		print("Game Process ID: " .. gameProcess.Process)
+
 		ao.send({
 			Target = msg.From,
 			Action = "Test-Message",
@@ -259,11 +227,12 @@ chess_registry.init = function()
 		LiveGames[gameProcess.Process]["players"] = {}
 		--TODO: send join message for player who created
 	end)
-	createActionHandler(actions.Spawned, function(msg)
-		-- add game ID and player ID to the LiveGames table
-		print("Spawned")
-		-- msg.Tags.['X-PlayerId']
-	end)
+	-- createActionHandler(actions.Spawned, function(msg)
+	-- 	-- add game ID and player ID to the LiveGames table
+	-- 	print("Spawned")
+	-- 	print(msg)
+	-- 	-- msg.Tags.['X-PlayerId']
+	-- end)
 	createActionHandler(actions.JoinGame, function(msg)
 		print("JoinGame")
 		local gameId = msg.From

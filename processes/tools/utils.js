@@ -1,4 +1,4 @@
-import AoLoader from '@permaweb/ao-loader';
+import AoLoader from "@permaweb/ao-loader";
 import {
   AOS_WASM,
   AO_LOADER_HANDLER_ENV,
@@ -6,7 +6,7 @@ import {
   BUNDLED_CHESS_GAME_AOS_LUA,
   BUNDLED_CHESS_REGISTRY_AOS_LUA,
   DEFAULT_HANDLE_OPTIONS,
-} from './constants.js';
+} from "./constants.js";
 
 /**
  * Loads the aos wasm binary and returns the handle function with program memory
@@ -20,7 +20,7 @@ export async function createAosLoader(lua) {
     null,
     {
       ...DEFAULT_HANDLE_OPTIONS,
-      Tags: [{ name: 'Action', value: 'Eval' }],
+      Tags: [{ name: "Action", value: "Eval" }],
       Data: lua,
     },
     AO_LOADER_HANDLER_ENV,

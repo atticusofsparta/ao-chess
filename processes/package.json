@@ -1,9 +1,9 @@
 {
   "type": "module",
   "scripts": {
-     "module:publish": "cd dist/chess/game && ao publish process.wasm -w ~/Documents/code/notMyKeyFile.json --tag=\"Memory-Limit\" --value=\"1-gb\" --tag=\"Compute-Limit\" --value=\"9000000000000\"  --tag=\"Input-Encoding\" --value=\"JSON-1\" --tag=\"Output-Encoding\" --value=\"JSON-1\" && cd ../../..",
     "chess-game:build": "node tools/bundle-aos.js --path=\"./src/chess/game/aos.lua\" --output=\"./dist/chess/game/aos-bundled.lua\"",
     "chess-game:build-aos-flavor": "node tools/build-aos-flavor.js --path=\"./src/chess/game/aos.lua\" --output=\"./dist/chess/game/\"",
+    "chess-game:publish": "cd dist/chess/game && ao publish process.wasm -w ../../../key.json --tag=\"Memory-Limit\" --value=\"1-gb\" --tag=\"Compute-Limit\" --value=\"9000000000000\"  --tag=\"Input-Encoding\" --value=\"JSON-1\" --tag=\"Output-Encoding\" --value=\"JSON-1\" --tag=\"Module-Format\" --value=\"wasm64-unknown-emscripten-draft_2024_02_15\" && cd ../../..",
     "chess-registry:build": "node tools/bundle-aos.js --path=\"./src/chess/registry/aos.lua\" --output=\"./dist/chess/registry/aos-bundled.lua\"",
     "chess:build": "yarn chess-game:build && yarn chess-registry:build",
     "chess:test": "node --test-concurrency 1 --experimental-wasm-memory64 ./tests/chess/*.test.js",

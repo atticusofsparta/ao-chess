@@ -1,13 +1,11 @@
 # AO Chess processes
 
-
 ## Examples
-
 
 ## AO Resources
 
-* https://ao.arweave.dev
-* https://cookbook_ao.arweave.dev
+- https://ao.arweave.dev
+- https://cookbook_ao.arweave.dev
 
 ---
 
