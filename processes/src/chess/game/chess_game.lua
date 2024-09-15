@@ -32,7 +32,7 @@ chess_game.init = function()
 	ChessRegistry = ao.env.Process.Tags['Chess-Registry-Id']
 	Players = {
 		wager = {
-			amount = tonumber(ao.env.Process.Tags['X-Wager-Amount']) or nil,
+			amount = tonumber(ao.env.Process.Tags['Wager-Amount']) or nil,
 			token = ao.env.Process.Tags['Wager-Token'],
 		},
 		white = {
@@ -112,10 +112,11 @@ chess_game.init = function()
 	end)
 
 	createForwardedActionHandler(actions.JoinWagerGame, function(msg)
-		assert(Players.wager.amount, 'Please use the Standard Join method')
+		assert(Players.wager and Players.wager.amount, 'Please use the Standard Join method')
 		-- Ensure Player not already joined
+		--TODO: This check is broken
 		assert(
-			msg.From ~= Players.white.id and msg.From ~= Players.black.id,
+			msg.Sender ~= Players.white.id and msg.Sender ~= Players.black.id,
 			'Player already joined this game, no refund'
 		)
 		assert(tonumber(msg.Quantity) == tonumber(Players.wager.amount), 'Improper wager amount, you get no refund')
@@ -159,7 +160,7 @@ chess_game.init = function()
 			Target = ChessRegistry,
 			Player = player,
 			['Player-Color'] = playerColor,
-			Action = actions.JoinGame .. '-Notice',
+			Action = 'Chess-Registry.Join-Game',
 		})
 	end)
 
@@ -211,9 +212,11 @@ chess_game.init = function()
 
 			-- Send out winnings
 			if Players.wager and Players.wager.amount then
-				local houseCut = Players.wager.amount * 0.05
-				local winnerCut = Players.wager.amount * 0.95
-
+				print('')
+				local houseCut = math.floor((Players.wager.amount * 2) * 0.05)
+				local winnerCut = math.floor((Players.wager.amount * 2) * 0.95)
+				print(type(winnerCut))
+				print(winnerCut)
 				if winner == 'draw' then
 					ao.send({
 						Target = Players.wager.token,
@@ -257,7 +260,7 @@ chess_game.init = function()
 			ChessRegistryId = ChessRegistry,
 			ChessModudleId = ChessGameModuleId,
 			Players = { white = Players.white.id, black = Players.black.id},
-			Wager = {Players.wager},
+			Wager = Players.wager,
 			fen = Game.fen()
 		}
 

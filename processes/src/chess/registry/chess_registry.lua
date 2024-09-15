@@ -337,15 +337,20 @@ chess_registry.init = function()
 	createActionHandler(actions.GameResult, function(msg)
 		print('GameResult')
 		local gameId = msg.From
+		assert(LiveGames[gameId], "failed at get id from live")
 		local live = LiveGames[gameId]
 		assert(live, 'Not a valid game')
 		local gameResult = json.decode(msg.Data)
+		assert(msg.Timestamp, "Failed at timestamp")
 		local Timestamp = tostring(msg.Timestamp)
 
 		-- update game
 		live.endTimeStamp = Timestamp
+		assert(live.endTimeStamp, "failed setting timestamp")
 		live.winner = gameResult.Winner
+		assert(live.winner, "failed at setting winner")
 
+		assert(LiveGames[gameId].players, "failed pulling players")
 		local whiteId = LiveGames[gameId].players.white
 		local blackId = LiveGames[gameId].players.black
 		local fen = gameResult['Final-Game-State']
@@ -373,6 +378,7 @@ chess_registry.init = function()
 		end
 
 		calculateAndUpdateElo(HistoricalGames[gameId].players.white, HistoricalGames[gameId].players.black)
+		assert(HistoricalGames[gameId], "failed setting historical game")
 		Players[whiteId].gameHistory[gameId] = HistoricalGames[gameId]
 		Players[blackId].gameHistory[gameId] = HistoricalGames[gameId]
 	end)
