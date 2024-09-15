@@ -244,6 +244,8 @@ chess_registry.init = function()
 		LiveGames[gameProcess.Process] = { startTimestamp = tostring(msg.Timestamp) }
 		LiveGames[gameProcess.Process]['players'] = {}
 		LiveGames[gameProcess.Process].CreatedBy = msg.From
+		LiveGames[gameProcess.Process].SpawnedWith = msg['Id']
+		LiveGames[gameProcess.Process]['Was-At-Some-Point-The-Most-Recently-Created-Game'] = true
 		--TODO: send join message for player who created
 	end)
 	-- createActionHandler(actions.Spawned, function(msg)
