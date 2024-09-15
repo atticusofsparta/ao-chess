@@ -208,6 +208,47 @@ chess_game.init = function()
 				}),
 				Action = "Chess-Registry.Game-Result-Notice",
 			})
+
+			-- Send out winnings
+			if Players.wager then
+				local houseCut = Players.wager.amount * 0.05
+				local winnerCut = Players.wager.amount * 0.95
+
+				if winner == "draw" then
+					ao.send({
+						Target = Players.wager.token,
+						Action = "Transfer",
+						Recipient = Players.white.id,
+						Quantity = tostring(winnerCut / 2)
+					})
+					ao.send({
+						Target = Players.wager.token,
+						Action = "Transfer",
+						Recipient = Players.black.id,
+						Quantity = tostring(winnerCut / 2),
+					})
+				elseif winner == "white" then
+					ao.send({
+						Target = Players.wager.token,
+						Action = "Transfer",
+						Recipient = Players.white.id,
+						Quantity = tostring(winnerCut),
+					})
+				elseif winner == "black" then
+					ao.send({
+						Target = Players.wager.token,
+						Action = "Transfer",
+						Recipient = Players.black.id,
+						Quantity = tostring(winnerCut ),
+					})
+				end
+				ao.send({
+					Target = Players.wager.token,
+					Action = "Transfer",
+					Recipient = ChessRegistry,
+					Quantity = tostring(houseCut),
+				})
+			end
 		end
 	end)
 
