@@ -79,10 +79,47 @@ chess_registry.init = function()
 		local gameIds = msg['Game-Ids']
 		local playerId = msg['Player-Id']
 		local typeFilter = msg.Type
+		local spawnMessage = msg['Spawned-With']
 		assert(
 			typeFilter == 'Live' or typeFilter == 'Historical' or typeFilter == 'undefined' or typeFilter == nil,
 			'Type must equal Live, Historical, undefiined or nil'
 		)
+
+		if spawnMessage then
+			local desiredGame = {Live = {}, Historical = {}}
+	
+			-- Loop over LiveGames and look for a match in spawnedWith
+			for gameId, game in pairs(LiveGames) do
+				if game.spawnedWith == spawnMessage then
+					desiredGame.Live[gameId] = game
+					break -- Exit loop once found
+				end
+			end
+	
+			-- If not found in LiveGames, check HistoricalGames
+			if not desiredGame then
+				for gameId, game in pairs(HistoricalGames) do
+					if game.spawnedWith == spawnMessage then
+						desiredGame.Historical[gameId] = game
+						break -- Exit loop once found
+					end
+				end
+			end
+	
+			-- If a game is found, handle the result (sending or processing the desired game)
+			if desiredGame then
+				-- Process desiredGame (you can add your own logic here)
+				print("Found game with Spawned-With: " .. spawnMessage)
+				-- Return or send the desiredGame as necessary
+				ao.send({
+					Target = msg.From,
+					Action = actions.GetGames .. "-Notice",
+					Data = json.encode(desiredGame)
+				})
+			else
+				print("No game found with Spawned-With: " .. spawnMessage)
+			end
+		end
 
 		-- decode gameIds if they exist
 		if gameIds then
@@ -243,9 +280,9 @@ chess_registry.init = function()
 
 		LiveGames[gameProcess.Process] = { startTimestamp = tostring(msg.Timestamp) }
 		LiveGames[gameProcess.Process]['players'] = {}
-		LiveGames[gameProcess.Process].CreatedBy = msg.From
-		LiveGames[gameProcess.Process].SpawnedWith = msg['Id']
-		LiveGames[gameProcess.Process]['Was-At-Some-Point-The-Most-Recently-Created-Game'] = true
+		LiveGames[gameProcess.Process].createdBy = msg.From
+		LiveGames[gameProcess.Process].spawnedWith = msg['Id']
+		LiveGames[gameProcess.Process]['wasAtSomePointTheMostRecentlyCreatedGame'] = true
 		--TODO: send join message for player who created
 	end)
 	-- createActionHandler(actions.Spawned, function(msg)
