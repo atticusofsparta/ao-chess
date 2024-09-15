@@ -20,7 +20,7 @@ local actions = {
 	CreateGame = "Chess-Registry.Create-Game",
 	Spawned = "Spawned", -- reserved name for aos spawned process that the spawned process calls back when it is ready
 	JoinGame = "Chess-Registry.Join-Game",
-	GameResult = "Chess-Registry.Game-Result",
+	GameResult = "Chess-Registry.Game-Result-Notice",
 	UpdateGameModuleId = "Chess-Registry.Update-Game-Module-Id",
 }
 chess_registry.ActionMap = actions
@@ -231,13 +231,14 @@ chess_registry.init = function()
 					surrenders = 0,
 				},
 				username = msg.Username,
+				gameHistory = {}
 			}
 			Players[tostring(msg.From)] = playerTable
 		end
 
 		assert(Players[msg.From], "Player not registered")
 
-		local gameProcess = ao.spawn(ChessGameModuleId,{
+		local gameProcess = ao.spawn(ChessGameModuleId, {
 			Tags = {
 				["Chess-Registry-Id"] = ao.id,
 				["Player-Id"] = msg.From,
@@ -265,10 +266,11 @@ chess_registry.init = function()
 	end)
 	createActionHandler(actions.JoinGame, function(msg)
 		print("JoinGame")
-		assert(LiveGames[msg.From], "Joining is handled by Game processes")
+		local gameId = msg.From
+		assert(LiveGames[gameId], "Joining is handled by Game processes")
 		assert(msg.Player, "Must specify player")
 
-		if not Players[msg[Player]] then
+		if not Players[msg.Player] then
 			local playerTable = {
 				stats = {
 					elo = constants.DEFAULT_ELO,
@@ -278,6 +280,7 @@ chess_registry.init = function()
 					surrenders = 0,
 				},
 				username = msg.Username,
+				gameHistory = {}
 			}
 			Players[tostring(msg.Player)] = playerTable
 		end
@@ -293,18 +296,130 @@ chess_registry.init = function()
 		end
 		assert(playerColor, "Player color must be specified")
 		-- Ensure not double joining
-		assert(not LiveGames[msg.From]["players"][playerColor], "Color " .. playerColor .. "is already occupied")
-		LiveGames[msg.From]["players"][playerColor] = msg.Player
+		assert(not LiveGames[gameId]["players"][playerColor], "Color " .. playerColor .. "is already occupied")
+		LiveGames[gameId]["players"][playerColor] = msg.Player
+		print(LiveGames[gameId])
+		Players[msg.Player].gameHistory[gameId] = LiveGames[gameId]
 		-- Send a confirmation message
 		ao.send({
-			Target = msg.From,
+			Target = gameId,
 			Action = actions.JoinGame .. "-Notice",
 			Data = "Successful Join operation",
 		})
 	end)
 	createActionHandler(actions.GameResult, function(msg)
 		print("GameResult")
+		local gameId = msg.From
+		local live = LiveGames[gameId]
+		assert(live, "Not a valid game")
+		local gameResult = json.decode(msg.Data)
+		local Timestamp = tostring(msg.Timestamp)
+
+		-- update game
+		live.endTimeStamp = Timestamp
+		live.winner = gameResult.Winner
+
+		local whiteId = LiveGames[gameId].players.white
+		local blackId = LiveGames[gameId].players.black
+		local fen = gameResult["Final-Game-State"]
+
+		local whiteScore, blackScore = calculateScores(fen)
+
+		live.players.white = { id = whiteId, score = whiteScore }
+		live.players.black = { id = blackId, score = blackScore }
+
+		-- copy to historical
+		HistoricalGames[gameId] = live
+		-- delete from live
+		LiveGames[gameId] = nil
+
+		print(json.encode(HistoricalGames[gameId]))
+		if gameResult.Winner == "white" then
+			Players[whiteId].stats.wins = Players[whiteId].stats.wins + 1
+			Players[blackId].stats.losses = Players[blackId].stats.losses + 1
+		elseif gameResult.Winner == "black" then
+			Players[whiteId].stats.loses = Players[whiteId].stats.loses + 1
+			Players[blackId].stats.wins = Players[blackId].stats.wins + 1
+		elseif gameResult.Winner == "draw" then
+			Players[whiteId].stats.stalemates = Players[whiteId].stats.stalemates + 1
+			Players[blackId].stats.stalemates = Players[blackId].stats.stalemates + 1
+		end
+
+		calculateAndUpdateElo(HistoricalGames[gameId].players.white, HistoricalGames[gameId].players.black)
+		Players[whiteId].gameHistory[gameId] = HistoricalGames[gameId]
+		Players[blackId].gameHistory[gameId] = HistoricalGames[gameId]
 	end)
+
+	function calculateAndUpdateElo(whitePlayer, blackPlayer)
+		-- Get the current ELO ratings from the Players table
+		local whiteElo = Players[whitePlayer.id].stats.elo or 1200
+		local blackElo = Players[blackPlayer.id].stats.elo or 1200
+		local K = 20 -- K-factor for Elo calculation
+
+		-- Determine game outcome (1 for win, 0.5 for draw, 0 for loss)
+		local whiteActualScore, blackActualScore
+		if whitePlayer.score > blackPlayer.score then
+			whiteActualScore, blackActualScore = 1, 0
+		elseif blackPlayer.score > whitePlayer.score then
+			whiteActualScore, blackActualScore = 0, 1
+		else
+			whiteActualScore, blackActualScore = 0.5, 0.5
+		end
+
+		-- Calculate expected scores
+		local whiteExpected = 1 / (1 + 10 ^ ((blackElo - whiteElo) / 400))
+		local blackExpected = 1 / (1 + 10 ^ ((whiteElo - blackElo) / 400))
+
+		-- Calculate new Elo ratings
+		local newWhiteElo = whiteElo + K * (whiteActualScore - whiteExpected)
+		local newBlackElo = blackElo + K * (blackActualScore - blackExpected)
+
+		-- Update the Elo ratings in the Players table
+		Players[whitePlayer.id].stats.elo = newWhiteElo
+		Players[blackPlayer.id].stats.elo = newBlackElo
+
+		-- Print new ELO ratings for debugging/logging
+		print("New ELO for White (ID: " .. whitePlayer.id .. "): " .. newWhiteElo)
+		print("New ELO for Black (ID: " .. blackPlayer.id .. "): " .. newBlackElo)
+	end
+
+	function calculateScores(fen)
+		local pieceValues = {
+			p = 1,
+			P = 1,
+			n = 3,
+			N = 3,
+			b = 3,
+			B = 3,
+			r = 5,
+			R = 5,
+			q = 9,
+			Q = 9,
+			k = 0,
+			K = 0, -- King is not scored
+		}
+		-- Get the board setup part of the FEN (first part before the first space)
+		local boardSetup = fen:match("([^ ]+)")
+
+		-- Initialize scores
+		local whiteScore = 0
+		local blackScore = 0
+
+		-- Iterate over each character in the board setup
+		for char in boardSetup:gmatch(".") do
+			if pieceValues[char] then
+				-- If it's a lowercase letter, it's a black piece
+				if char:lower() == char then
+					blackScore = blackScore + pieceValues[char]
+				-- If it's an uppercase letter, it's a white piece
+				else
+					whiteScore = whiteScore + pieceValues[char]
+				end
+			end
+		end
+
+		return whiteScore, blackScore
+	end
 
 	createActionHandler(actions.UpdateGameModuleId, function(msg)
 		assert(msg.From == Owner, "Unauthorized")

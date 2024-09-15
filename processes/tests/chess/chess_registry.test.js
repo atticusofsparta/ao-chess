@@ -146,6 +146,25 @@ describe('Chess Registry', async () => {
     registerMemory = result.Memory
   })
 
+   it('should join a second to the game', async () => {
+    const result = await sendMessage({
+      Tags: [
+        { name: "Action", value: "Chess-Registry.Join-Game"},
+        { name: "Player", value: DEFAULT_HANDLE_OPTIONS.Id},
+        { name: "Player-Color", value: "white"}
+      ]
+    }, registerMemory)
+    console.dir(result, {depth: null})
+    const tags = result.Messages[0].Tags;
+
+    // Find the object where name is "Player-Color"
+    const actionTag = tags.find(tag => tag.name === "Action");
+
+    // Assert that the value is "black"
+    assert(actionTag && actionTag.value != "Invalid-Chess-Registry.Join-Game-Notice");
+    registerMemory = result.Memory
+  })
+
   it('should get the specific, joined game', async () => {
     const result = await sendMessage({
       Tags: [
@@ -181,7 +200,32 @@ describe('Chess Registry', async () => {
     const jsonResults = JSON.parse(result.Messages[0].Data)
     assert(jsonResults[DEFAULT_HANDLE_OPTIONS.Id])
   })
-  it('should get full player list', async () => {
+ 
+
+  it('should update module-id', async () => {
+    const result = await sendMessage({
+      Tags: [
+        { name: "Action", value: "Chess-Registry.Update-Game-Module-Id"},
+        { name: 'Module-Id', value: "7"}
+      ]
+    }, registerMemory)
+    console.dir(result, {depth: null})
+    assert(!result.Messages[0].Error)
+    registerMemory = result.Memory
+  })
+
+  it('should handle gameResults', async () => {
+    const result = await sendMessage({
+      Tags: [
+       { name: "Action", value: "Chess-Registry.Game-Result-Notice"} 
+      ],
+      Data: JSON.stringify({"Winner":"white","Reason":"Checkmate","Final-Game-State":"r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4"})
+    }, registerMemory)
+    console.dir(result, {depth: null})
+    registerMemory = result.Memory
+  })
+
+   it('should get full player list', async () => {
     const result = await sendMessage({
       Tags: 
         [{
@@ -196,15 +240,4 @@ describe('Chess Registry', async () => {
     assert(jsonResults[DEFAULT_HANDLE_OPTIONS.Id])
     assert(jsonResults[ALTERNATE_HANDLE_OPTIONS.Id])
     });
-
-  it('should update module-id', async () => {
-    const result = await sendMessage({
-      Tags: [
-        { name: "Action", value: "Chess-Registry.Update-Game-Module-Id"},
-        { name: 'Module-Id', value: "7"}
-      ]
-    }, registerMemory)
-    console.dir(result, {depth: null})
-    assert(!result.Messages[0].Error)
-  })
 });
