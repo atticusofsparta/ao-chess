@@ -13,6 +13,7 @@ local actions = {
 	GetFEN = "Chess-Game.Get-FEN",
 	GetPGN = "Chess-Game.Get-PGN",
 	TestResponsiveness = "Chess-Game.Test-Responsiveness",
+	GetInfo = "Chess-Game.Get-Info",
 	-- write
 	JoinGame = "Chess-Game.Join-Game",
 	JoinWagerGame = "Chess-Game.Join-Wager-Game",
@@ -208,6 +209,23 @@ chess_game.init = function()
 				Action = "Chess-Registry.Game-Result-Notice",
 			})
 		end
+	end)
+
+	createActionHandler(actions.GetInfo, function(msg)
+		local info = {
+			ChessRegistryId = ChessRegistry,
+			ChessModudleId = ChessGameModuleId,
+			Players = { white = Players.white.id, black = Players.black.id},
+			Wager = {Players.wager},
+			fen = Game.fen()
+		}
+
+
+		ao.send({
+			Target = msg.From,
+			Data = json.encode(info),
+			Action = "Chess-Game.Get-Info-Notice",
+		})
 	end)
 end
 

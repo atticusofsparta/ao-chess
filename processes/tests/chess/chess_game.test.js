@@ -101,6 +101,23 @@ describe('Chess Game', async () => {
     startMemory = result.Memory
   })
 
+  it('should get game info', async () => {
+    const result = await sendMessage({
+      Tags: [
+        {name: "Action", value: "Chess-Game.Get-Info"}
+      ]
+    }, startMemory)
+    console.dir(result, {depth: null})
+    assert(result.Messages[0])
+    const tags = result.Messages[0].Tags;
+
+    // Find the object where name is "Action"
+    const actionTag = tags.find(tag => tag.name === "Action");
+
+    assert(actionTag && actionTag.value === "Chess-Game.Get-Info-Notice");
+    startMemory = result.Memory
+  })
+
   it('should submit the first move', async () => {
     const moveObject = {from: 'e2', to: 'e4'}
     const result = await sendMessage({
@@ -144,7 +161,6 @@ describe('Chess Game', async () => {
   })
 
    it('should finish a game and get the results', async () => {
-    const expectedResultString = '{"Winner":"white","Reason":"Checkmate","Final-Game-State":"r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4"}'
     const firstMoveObject = {from: 'f1', to: 'c4'}
     const secondMoveObject = {from: 'g8', to: 'f6'}
     const thirdMoveobject = {from: 'd1', to: 'h5'}
@@ -191,6 +207,8 @@ describe('Chess Game', async () => {
       }, startMemory)
     startMemory = result5.Memory
       console.dir(result5, {depth: null})
-      assert(result5.Messages[2] && result5.Messages[2].Data == expectedResultString)
+      assert(result5.Messages[2])
+      const finalResult = JSON.parse(result5.Messages[2].Data)
+      assert(finalResult.Winner == 'white' && finalResult.Reason == 'Checkmate' && finalResult['Final-Game-State'] == "r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4")
     })
 });
