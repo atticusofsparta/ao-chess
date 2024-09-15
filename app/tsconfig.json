@@ -21,5 +21,12 @@
       "@src/*": ["./src/*"]
     }
   },
-  "include": ["src", "types", "tests"]
+  "include": [
+    "src",
+    "types",
+    "tests",
+    "vite.config.ts",
+    "vite-plugin-raw.d.ts",
+    "lua.d.ts"
+  ]
 }

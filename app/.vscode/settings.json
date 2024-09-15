@@ -20,7 +20,6 @@
   "Lua.workspace.checkThirdParty": true,
   "[lua]": {
     "editor.defaultFormatter": "JohnnyMorganz.stylua",
-    "editor.formatOnSave": true,
-  },
-    
+    "editor.formatOnSave": true
+  }
 }

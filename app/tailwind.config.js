@@ -7,7 +7,7 @@ export default {
     extend: {
       backgroundImage: {},
       fontFamily: {
-        sans: ['Rubik', 'sans-serif'],
+        sans: ['Cinzel Variable', 'serif'],
       },
       boxShadow: {
         one: '0px 0px 4px rgba(0, 0, 0, 0.5)',
@@ -19,8 +19,7 @@ export default {
       },
     },
     colors: {
-      primary: '#ffb938',
-      ['primary-thin']: 'rgba(255, 185, 56, 0.1)',
+      primary: '#6c97b5',
       background: '#131314',
       foreground: '#222224',
       success: '#44af69',
@@ -34,6 +33,8 @@ export default {
       ['dark-grey']: '#38393b',
     },
   },
-  plugins: [require('tailwindcss-animate'),
-    require('tailwind-scrollbar')({ nocompatible: true }),],
+  plugins: [
+    require('tailwindcss-animate'),
+    require('tailwind-scrollbar')({ nocompatible: true }),
+  ],
 };
