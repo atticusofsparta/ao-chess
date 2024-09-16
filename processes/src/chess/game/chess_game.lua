@@ -18,6 +18,7 @@ local actions = {
 	JoinGame = 'Chess-Game.Join-Game',
 	JoinWagerGame = 'Chess-Game.Join-Wager-Game',
 	Move = 'Chess-Game.Move',
+	Chat = "Chess-Game.Send-Message"
 }
 
 chess_game.ActionMap = actions
@@ -30,6 +31,7 @@ chess_game.init = function()
 	local Chess = require('.chess')
 
 	ChessRegistry = ao.env.Process.Tags['Chess-Registry-Id']
+	GameChat = {}
 	Players = {
 		wager = {
 			amount = tonumber(ao.env.Process.Tags['Wager-Amount']) or nil,
@@ -46,6 +48,28 @@ chess_game.init = function()
 	}
 	Game = Chess()
 	math.randomseed(os.time())
+
+	createActionHandler(actions.Chat, function(msg)
+		assert(msg.From == Players.white.id or msg.From == Players.black.id, "Shaddap you face")
+
+		local message = {
+			sender = msg.From,
+			timestamp = msg.Timestamp,
+			message = msg.Data
+		}
+		ao.send({
+			Target = Players.white.id,
+			Data = json.encode(message),
+			Action = actions.Chat .. "-Notice",
+		})
+		ao.send({
+			Target = Players.white.id,
+			Data = json.encode(message),
+			Action = actions.Chat .. "-Notice",
+		})
+
+		table.insert(GameChat, message)
+	end)
 
 	createActionHandler(actions.TestResponsiveness, function(msg)
 		ao.send({
@@ -261,7 +285,8 @@ chess_game.init = function()
 			ChessModudleId = ChessGameModuleId,
 			Players = { white = Players.white.id, black = Players.black.id},
 			Wager = Players.wager,
-			fen = Game.fen()
+			fen = Game.fen(),
+			chat = GameChat
 		}
 
 
