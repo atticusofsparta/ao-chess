@@ -34,7 +34,7 @@ export const AO_LOADER_OPTIONS = {
 export const AOS_WASM = fs.readFileSync(
   path.join(
     __dirname,
-    "fixtures/aos-cbn0KKrBZH7hdNkNokuXLtGryrWM--PjSTBqIzw9Kkk.wasm",
+    "fixtures/aos-C61NgrJDuhwGUsFca1rgfE7ehAKSdgOqPj6aYYy5u4s.wasm",
   ),
 );
 

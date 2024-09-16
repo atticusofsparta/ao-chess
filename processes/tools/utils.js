@@ -38,3 +38,8 @@ export async function createChessRegistryAosLoader() {
 export async function createChessGameAosLoader() {
   return createAosLoader(BUNDLED_CHESS_GAME_AOS_LUA);
 }
+
+export async function getHandlers(sendMessage, memory){
+
+  return sendMessage({Tags: [{name: "Action", value: "Eval"}], Data: "Handlers.list"}, memory)
+}
