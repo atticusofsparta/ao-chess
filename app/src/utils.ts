@@ -3,6 +3,13 @@ import rsa from 'js-crypto-rsa';
 
 import { ARNS_TX_ID_REGEX, DEFAULT_ARWEAVE } from './constants';
 
+export function formatDate(timestamp: number) {
+  return new Date(timestamp).toLocaleString();
+}
+
+export function formatTime(timestamp: number) {
+  return new Date(timestamp).toLocaleTimeString();
+}
 export function formatArweaveAddress(address: string) {
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
@@ -248,7 +255,10 @@ export class Token {
   }
 
   toMToken(): mToken {
-    return new mToken(Math.floor(this.value * this.denomination), this.denomination);
+    return new mToken(
+      Math.floor(this.value * 10 ** this.denomination),
+      this.denomination,
+    );
   }
 
   toString(): string {
@@ -290,7 +300,10 @@ export class mToken extends PositiveFiniteInteger {
   }
 
   toToken(): Token {
-    return new Token(this.valueOf() / this.denomination, this.denomination);
+    return new Token(
+      this.valueOf() / 10 ** this.denomination,
+      this.denomination,
+    );
   }
 }
 

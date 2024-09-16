@@ -1,7 +1,7 @@
 import { ConnectButton } from 'arweave-wallet-kit';
+import { Link } from 'react-router-dom';
 
 import ProfileButton from '../buttons/ProfileButton';
-import { Link } from 'react-router-dom';
 
 function Navbar() {
   return (
@@ -10,9 +10,24 @@ function Navbar() {
       <div className="text-2xl text-white underline">Chess</div>
       {/* right side */}
       <div className="flex flex-row items-center">
-        <Link to={`/`} className="px-2 text-white cursor-pointer hover:text-primary">Home</Link>
-         <Link to={`/games`} className="px-2 text-white cursor-pointer hover:text-primary">Games</Link>
-        <Link to={`/tutorial`} className="px-2 text-white cursor-pointer hover:text-primary">Tutorial</Link>
+        <Link
+          to={`/`}
+          className="cursor-pointer px-2 text-white hover:text-primary"
+        >
+          Home
+        </Link>
+        <Link
+          to={`/games`}
+          className="cursor-pointer px-2 text-white hover:text-primary"
+        >
+          Games
+        </Link>
+        <Link
+          to={`/tutorial`}
+          className="cursor-pointer px-2 text-white hover:text-primary"
+        >
+          Tutorial
+        </Link>
         <ProfileButton />
       </div>
     </nav>

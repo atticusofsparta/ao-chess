@@ -1,9 +1,9 @@
 import {
+  ChatMessage,
   ChessGame,
   ChessGameReadable,
   ChessGameWritable,
 } from '@src/services/ao/chess/game';
-import { errorEmitter } from '@src/services/events';
 import { useGlobalState } from '@src/services/state/useGlobalState';
 import { Chess } from 'chess.js';
 import { useCallback, useEffect, useState } from 'react';
@@ -15,18 +15,26 @@ export function useGame(id: string) {
     ChessGameReadable | ChessGameWritable
   >(ChessGame.init({ processId: id, signer: signer as any }));
   const [game, setGame] = useState(new Chess());
+  const [fen, setFen] = useState<string>(game.fen());
   const [orientation, setOrientation] = useState<'white' | 'black'>();
   const [opponent, setOpponent] = useState<string>();
   const [wager, setWager] = useState<number>();
   const [wagerToken, setWagerToken] = useState<string>();
   const [chessRegistryId, setChessRegistryId] = useState<string>();
+  const [chat, setChat] = useState<ChatMessage[]>([]);
 
   const updateGame = useCallback(
     async (newFen?: string) => {
       try {
         const info = await gameProcess.getInfo();
-        const whiteId = info.Players.white.id;
-        const blackId = info.Players.black.id;
+        setChat(info?.chat ?? []);
+        setFen(info?.fen);
+        console.log(info);
+        const whiteId = info.Players?.white?.id;
+        const blackId = info.Players?.black?.id;
+        if (!whiteId || !blackId) {
+          return;
+        }
         if (whiteId === address) {
           setOrientation('white');
           setOpponent(blackId);
@@ -37,14 +45,14 @@ export function useGame(id: string) {
         setWager(info.Players?.wager?.amount);
         setWagerToken(info.Players?.wager?.token);
         setChessRegistryId(info.ChessRegistryId);
-        const fen = newFen ?? info.Fen;
+        const fen = newFen ?? info.fen;
         if (fen && fen !== game.fen()) {
           const gameCopy: any = { ...game };
           gameCopy.load(fen);
           setGame(gameCopy);
         }
       } catch (error) {
-        errorEmitter.emit('error', error);
+        console.error(error);
       }
     },
     [game, gameProcess, address],
@@ -66,9 +74,10 @@ export function useGame(id: string) {
             throw new Error('Invalid move: ' + e.message);
           });
         const newFen = res.result;
+        setFen(newFen);
         updateGame(newFen);
       } catch (error) {
-        errorEmitter.emit('error', error);
+        console.error('error', error);
       }
     },
     [gameProcess, updateGame],
@@ -97,5 +106,7 @@ export function useGame(id: string) {
     wagerToken,
     chessRegistryId,
     isPlayerTurn: orientation ? game.turn() === orientation?.charAt(0) : false,
+    fen,
+    chat,
   };
 }
