@@ -231,7 +231,7 @@ chess_registry.init = function()
 	-- 	-- add game ID and player ID to the LiveGames table
 	-- 	print("Spawned")
 	-- 	print(msg)
-	-- 	-- msg.Tags.['X-PlayerId']
+	-- 	-- msg.Tags.['X-Player-Id']
 	-- end)
 	createActionHandler(actions.JoinGame, function(msg)
 		print("JoinGame")

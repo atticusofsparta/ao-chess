@@ -1,11 +1,23 @@
-import { useGame } from '@src/hooks/useGame';
-import { errorEmitter } from '@src/services/events';
-import { Square } from 'chess.js';
-import { useState } from 'react';
-import { Chessboard } from 'react-chessboard';
+import { Chess, Square } from 'chess.js';
+import { useRef, useState } from 'react';
+import { Chessboard, ChessboardDnDProvider } from 'react-chessboard';
 
-export default function ClickMove({ gameId }: { gameId: string }) {
-  const { game, move: movePiece, orientation, isPlayerTurn } = useGame(gameId);
+export default function ClickMove({
+  game,
+  movePiece,
+  orientation,
+  isPlayerTurn,
+  fen,
+}: {
+  game: Chess;
+  movePiece: (p: {
+    move: { to: string; from: string; promotion: string };
+  }) => Promise<void>;
+  orientation: 'white' | 'black' | undefined;
+  isPlayerTurn: boolean;
+  fen: string;
+}) {
+  const chessboardRef = useRef<any>();
 
   const [moveFrom, setMoveFrom] = useState('');
 
@@ -39,7 +51,7 @@ export default function ClickMove({ gameId }: { gameId: string }) {
     setOptionSquares(newSquares);
   }
 
-  function onSquareClick(square: Square) {
+  function onSquareClick(square: Square, isTurn: boolean) {
     setRightClickedSquares({});
 
     function resetFirstMove(square: Square) {
@@ -52,15 +64,18 @@ export default function ClickMove({ gameId }: { gameId: string }) {
       resetFirstMove(square);
       return;
     }
-    if (moveFrom && !isPlayerTurn) {
-      errorEmitter.emit('error', 'Not your turn');
+    if (moveFrom && !isTurn) {
+      console.error('Not your turn');
     }
     const move = {
       from: moveFrom,
       to: square,
       promotion: 'q', // always promote to a queen for example simplicity
     };
-    movePiece({ move });
+    movePiece({ move }).finally(() => {
+      setOptionSquares({});
+      setMoveFrom('');
+    });
   }
 
   //highlighting
@@ -75,24 +90,30 @@ export default function ClickMove({ gameId }: { gameId: string }) {
           : { backgroundColor: colour },
     });
   }
+  if (!game) {
+    return null;
+  }
 
   return (
-    <Chessboard
-      id="myboard"
-      animationDuration={200}
-      arePiecesDraggable={false}
-      position={game.fen()}
-      onSquareClick={onSquareClick}
-      onSquareRightClick={onSquareRightClick}
-      boardOrientation={orientation}
-      customSquareStyles={{
-        ...optionSquares,
-        ...rightClickedSquares,
-      }}
-      customBoardStyle={{
-        borderRadius: '4px',
-        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
-      }}
-    />
+    <ChessboardDnDProvider>
+      <Chessboard
+        id="myboard"
+        animationDuration={200}
+        position={fen}
+        onSquareClick={(square: Square) => onSquareClick(square, isPlayerTurn)}
+        arePiecesDraggable={false}
+        onSquareRightClick={onSquareRightClick}
+        boardOrientation={orientation as any}
+        customSquareStyles={{
+          ...optionSquares,
+          ...rightClickedSquares,
+        }}
+        customBoardStyle={{
+          borderRadius: '4px',
+          boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
+        }}
+        ref={chessboardRef}
+      />
+    </ChessboardDnDProvider>
   );
 }

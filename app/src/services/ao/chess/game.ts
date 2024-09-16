@@ -26,13 +26,20 @@ export type ChessGamePlayerList = {
   black: ChessGamePlayer;
 };
 
+export type ChatMessage = {
+  sender: string;
+  message: string;
+  timestamp: number;
+};
+
 export interface AoChessGameReadable {
   getFEN(): Promise<string>;
   getPGN(): Promise<string>;
   getInfo(): Promise<{
     ChessRegistryId: string;
     Players: ChessGamePlayerList;
-    Fen: string;
+    fen: string;
+    chat: ChatMessage[];
   }>;
 }
 
@@ -42,9 +49,11 @@ export interface AoChessGameWritable {
   move(p: {
     move: { to: string; from: string; promotion: string } | 'surrender';
   }): Promise<AoMessageResult>;
+  sendMessage(p: { message: string }): Promise<AoMessageResult>;
 }
 
 export class ChessGame {
+  static init(): ChessGameReadable;
   static init(
     config: Required<ProcessConfiguration> & { signer?: undefined },
   ): ChessGameReadable;
@@ -52,41 +61,26 @@ export class ChessGame {
     signer,
     ...config
   }: WithSigner<Required<ProcessConfiguration>>): ChessGameWritable;
-  static init({
-    signer,
-    chessRegistryId,
-    wagerTokenId,
-    wagerTokenAmount,
-    gameId,
-    ...config
-  }: OptionalSigner<Required<ProcessConfiguration>> & {
-    chessRegistryId?: string;
-    wagerTokenId?: string;
-    wagerTokenAmount?: number;
-    gameId?: string;
-  }): ChessGameReadable | ChessGameWritable {
-    // ao supported implementation
-    if (isProcessConfiguration(config) || isProcessIdConfiguration(config)) {
-      if (!signer) {
-        return new ChessGameReadable(config);
-      } else if (
-        chessRegistryId &&
-        wagerTokenId &&
-        wagerTokenAmount &&
-        gameId
-      ) {
-        return new ChessGameWritable({
-          signer,
-          chessRegistryId,
-          wagerTokenId,
-          wagerTokenAmount,
-          gameId,
-          ...config,
-        });
-      }
+  static init(
+    config?: OptionalSigner<Required<ProcessConfiguration>> & {
+      chessRegistryId?: string;
+      wagerTokenId?: string;
+      wagerTokenAmount?: number;
+      gameId?: string;
+    },
+  ): ChessGameReadable | ChessGameWritable {
+    if (config && config.signer) {
+      const { signer, ...rest } = config;
+      return new ChessGameWritable({
+        ...rest,
+        signer,
+      } as any);
     }
-
-    throw new InvalidContractConfigurationError();
+    const readConfig = config as any;
+    return new ChessGameReadable({
+      processId: readConfig?.processId,
+      process: readConfig?.process,
+    } as any);
   }
 }
 
@@ -108,12 +102,14 @@ export class ChessGameReadable implements AoChessGameReadable {
   async getInfo(): Promise<{
     ChessRegistryId: string;
     Players: ChessGamePlayerList;
-    Fen: string;
+    fen: string;
+    chat: ChatMessage[];
   }> {
     const info = await this.process.read<{
       ChessRegistryId: string;
       Players: ChessGamePlayerList;
-      Fen: string;
+      fen: string;
+      chat: ChatMessage[];
     }>({
       tags: [{ name: 'Action', value: 'Chess-Game.Get-Info' }],
     });
@@ -189,6 +185,7 @@ export class ChessGameWritable
     return this.wagerProcess.send({
       tags: [
         { name: 'Action', value: 'Transfer' },
+        { name: 'Recipient', value: this.gameId },
         { name: 'Quantity', value: this.wagerTokenAmount.toString() },
         { name: 'X-Action', value: 'Chess-Game.Join-Wager-Game' },
         { name: 'X-Game-Id', value: this.gameId },
@@ -208,5 +205,17 @@ export class ChessGameWritable
       data: JSON.stringify(move),
       signer: this.signer,
     }) as Promise<AoMessageResult & { result: string }>;
+  }
+
+  async sendMessage({
+    message,
+  }: {
+    message: string;
+  }): Promise<AoMessageResult> {
+    return this.process.send({
+      tags: [{ name: 'Action', value: 'Chess-Game.Send-Message' }],
+      data: message,
+      signer: this.signer,
+    });
   }
 }

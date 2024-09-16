@@ -6,22 +6,23 @@ import React, { Suspense, useEffect } from 'react';
 import {
   Route,
   RouterProvider,
-  createBrowserRouter,
+  createHashRouter,
   createRoutesFromElements,
 } from 'react-router-dom';
 import { mountStoreDevtool } from 'simple-zustand-devtools';
 
 import AppRouterLayout from './components/layout/AppRouterLayout';
+import Game from './pages/Game';
 import NotFound from './pages/NotFound';
+import { ChessRegistry } from './services/ao/chess/registry';
 import { errorEmitter } from './services/events';
 import { useGlobalState } from './services/state/useGlobalState';
 
 const Home = React.lazy(() => import('./pages/Home'));
 const Games = React.lazy(() => import('./pages/Games'));
-const Game = React.lazy(() => import('./pages/Game'));
 const Tutorial = React.lazy(() => import('./pages/Tutorial'));
 
-const sentryCreateBrowserRouter = wrapCreateBrowserRouter(createBrowserRouter);
+const sentryCreateBrowserRouter = wrapCreateBrowserRouter(createHashRouter);
 
 function App() {
   mountStoreDevtool('useGlobalState', useGlobalState);
@@ -30,6 +31,10 @@ function App() {
   const setAddress = useGlobalState((state) => state.setAddress);
   const setAoSigner = useGlobalState((state) => state.setAoSigner);
   const updateProfiles = useGlobalState((state) => state.updateProfiles);
+  const setChessRegistryProvider = useGlobalState(
+    (state) => state.setChessRegistryProvider,
+  );
+
   const router = sentryCreateBrowserRouter(
     createRoutesFromElements(
       <Route element={<AppRouterLayout />} errorElement={<NotFound />}>
@@ -62,18 +67,8 @@ function App() {
               <Games />
             </Suspense>
           }
-        >
-          <Route
-            path=":gameId"
-            element={
-              <Suspense
-                fallback={<div className="center flex flex-row">Loading</div>}
-              >
-                <Game />
-              </Suspense>
-            }
-          />
-        </Route>
+        />
+        <Route path="/game/:gameId" element={<Game />} />
         <Route
           path={'tutorial'}
           element={
@@ -103,6 +98,7 @@ function App() {
       setAddress(address);
       const signer = createDataItemSigner(window.arweaveWallet);
       setAoSigner(signer as AoSigner);
+      setChessRegistryProvider(ChessRegistry.init({ signer } as any));
       await updateProfiles(address);
     } catch (error) {
       errorEmitter.emit('error', error);

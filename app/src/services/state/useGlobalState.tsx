@@ -1,6 +1,14 @@
 import { AoSigner } from '@ar.io/sdk';
+import { CHESS_REGISTRY_ID } from '@src/constants';
 import { create } from 'zustand';
 
+import {
+  AoChessRegistryReadable,
+  AoChessRegistryWritable,
+  ChessRegistry,
+  ChessRegistryReadable,
+  ChessRegistryWritable,
+} from '../ao/chess/registry';
 import {
   AoProfile,
   AoProfileRead,
@@ -31,7 +39,7 @@ export type GlobalState = {
   profileRegistryProvider: AoProfileRegistryReadable;
   // chess state
   chessRegistryId: string;
-  chessRegistryProvider: ChessReg;
+  chessRegistryProvider: ChessRegistryReadable | ChessRegistryWritable;
 };
 
 export type GlobalStateActions = {
@@ -49,6 +57,10 @@ export type GlobalStateActions = {
   setProfileId: (profileId: string) => void;
   setProfiles: (profiles: Record<string, ProfileInfoResponse>) => void;
   updateProfiles: (address: string) => Promise<void>;
+  // set provider actions
+  setChessRegistryProvider: (
+    provider: AoChessRegistryReadable | AoChessRegistryWritable,
+  ) => void;
   reset: () => void;
 };
 
@@ -60,6 +72,8 @@ export const initialGlobalState: GlobalState = {
   showCreateGameModal: false,
   showFindGameModal: false,
   profileRegistryProvider: ProfileRegistry.init(),
+  chessRegistryId: CHESS_REGISTRY_ID,
+  chessRegistryProvider: ChessRegistry.init() as any,
 };
 
 export class GlobalStateActionBase implements GlobalStateActions {
@@ -123,6 +137,11 @@ export class GlobalStateActionBase implements GlobalStateActions {
     this.setProfileId(profileId);
   };
 
+  setChessRegistryProvider = (
+    provider: AoChessRegistryReadable | AoChessRegistryWritable,
+  ) => {
+    this.set({ chessRegistryProvider: provider });
+  };
   reset = () => {
     this.set({ ...this.initialGlobalState });
   };

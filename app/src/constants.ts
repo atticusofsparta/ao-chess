@@ -6,11 +6,17 @@ import winston, { createLogger, format, transports } from 'winston';
 
 import { Logger } from '../types/index.js';
 
-export const llamaTokenId = 'pazXumQI-HPH7iFGfTC-4_7biSnqz_U67oFAGry5zUY'
+export const llamaTokenId = 'pazXumQI-HPH7iFGfTC-4_7biSnqz_U67oFAGry5zUY';
+export const pixlTokenId = 'DM3FoZUq_yebASPhgd8pEIRIzDW6muXEhxz5-JwbZwo';
+export const expTokenId = 'aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw';
+export const trunkTokenId = 'wOrb8b_V8QixWyXZub48Ki5B6OIDyf_p1ngoonsaRpQ';
+export const warTokenId = 'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10';
+export const tioTokenId = 'agYcCFJtrMG6cqMuZfskIkFTGvUPddICmtQSBIoPdiA';
+export const jooseTokenId = 'YMs4s_KkK7JHG1y8QplgZz0RYuKL_46FLq5ZG4wWrn8';
 export const PROFILE_REGISTRY_ID =
   'SNy4m-DrqxWl01YqGM4sxI8qCni-58re8uuJLvZPypY';
 
-export const CHESS_REGISTRY_ID = 'SNy4m-DrqxWl01YqGM4sxI8qCni-58re8uuJLvZPypY';
+export const CHESS_REGISTRY_ID = '68RPFRxEP7sCQ2YDjHIybnMpXclq0-rWDKlxz9CG_dg';
 export const ARWEAVE_HOST = 'arweave.net';
 export const NETWORK_DEFAULTS = {
   AO: {

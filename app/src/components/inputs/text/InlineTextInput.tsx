@@ -2,6 +2,7 @@ function InlineTextInput({
   title,
   value,
   setValue,
+  onPressEnter,
   className = '',
   placeholder = '',
   disabled = false,
@@ -9,6 +10,7 @@ function InlineTextInput({
   title?: string;
   value: string;
   setValue: (value: string) => void;
+  onPressEnter?: () => void;
   className?: string;
   placeholder?: string;
   disabled?: boolean;
@@ -22,6 +24,11 @@ function InlineTextInput({
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && onPressEnter) {
+            onPressEnter();
+          }
+        }}
       />
     </div>
   );
