@@ -6,7 +6,7 @@ import React, { Suspense, useEffect } from 'react';
 import {
   Route,
   RouterProvider,
-  createBrowserRouter,
+  createHashRouter,
   createRoutesFromElements,
 } from 'react-router-dom';
 import { mountStoreDevtool } from 'simple-zustand-devtools';
@@ -22,7 +22,7 @@ const Home = React.lazy(() => import('./pages/Home'));
 const Games = React.lazy(() => import('./pages/Games'));
 const Tutorial = React.lazy(() => import('./pages/Tutorial'));
 
-const sentryCreateBrowserRouter = wrapCreateBrowserRouter(createBrowserRouter);
+const sentryCreateBrowserRouter = wrapCreateBrowserRouter(createHashRouter);
 
 function App() {
   mountStoreDevtool('useGlobalState', useGlobalState);
