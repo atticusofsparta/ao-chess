@@ -176,14 +176,14 @@ chess_registry.init = function()
 			else
 				-- Return all games if no gameId or playerId is provided
 				local allGames = {
-					LiveGames = {},
-					HistoricalGames = {},
+					Live = {},
+					Historical = {},
 				}
 				if typeFilter ~= 'Historical' then
-					allGames.LiveGames = LiveGames
+					allGames.Live = LiveGames
 				end
 				if typeFilter ~= 'Live' then
-					allGames.HistoricalGames = HistoricalGames
+					allGames.Historical = HistoricalGames
 				end
 				ao.send({
 					Target = msg.From,
