@@ -3117,9 +3117,10 @@ chess_game.init = function()
 
 	ChessRegistry = ao.env.Process.Tags['Chess-Registry-Id']
 	GameChat = {}
+	GameName = ao.env.Process.Tags['Game-Name']
 	Players = {
 		wager = {
-			amount = tonumber(ao.env.Process.Tags['Wager-Amount']) or nil,
+			amount = ao.env.Process.Tags['Wager-Amount'] or nil,
 			token = ao.env.Process.Tags['Wager-Token'],
 		},
 		white = {
@@ -3322,8 +3323,8 @@ chess_game.init = function()
 			-- Send out winnings
 			if Players.wager and Players.wager.amount then
 				print('')
-				local houseCut = math.floor((Players.wager.amount * 2) * 0.05)
-				local winnerCut = math.floor((Players.wager.amount * 2) * 0.95)
+				local houseCut = math.floor((tonumber(Players.wager.amount) * 2) * 0.05)
+				local winnerCut = math.floor((tonumber(Players.wager.amount * 2)) * 0.95)
 				print(type(winnerCut))
 				print(winnerCut)
 				if winner == 'draw' then
@@ -3366,8 +3367,8 @@ chess_game.init = function()
 
 	createActionHandler(actions.GetInfo, function(msg)
 		local info = {
+			GameName = GameName,
 			ChessRegistryId = ChessRegistry,
-			ChessModudleId = ChessGameModuleId,
 			Players = { white = Players.white.id, black = Players.black.id},
 			Wager = Players.wager,
 			fen = Game.fen(),
@@ -3392,6 +3393,7 @@ _G.package.loaded[".chess_game"] = _loaded_mod_chess_game()
 local chess_game = require(".chess_game")
 
 chess_game.init()
+
 
     ]=]
 

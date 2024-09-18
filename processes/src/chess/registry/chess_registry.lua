@@ -263,14 +263,6 @@ chess_registry.init = function()
 			Data = ChessGameCode
 		})
 
-	
-
-		local evalResult2 = Send({
-			Target = gameProcess.Process,
-			Action = "Eval",
-			Data = "Handlers.list"
-		})
-
 
 		ao.send({
 			Target = msg.From,
@@ -283,6 +275,7 @@ chess_registry.init = function()
 		LiveGames[gameProcess.Process].createdBy = msg.From
 		LiveGames[gameProcess.Process].spawnedWith = msg['Id']
 		LiveGames[gameProcess.Process]['wasAtSomePointTheMostRecentlyCreatedGame'] = true
+		LiveGames[gameProcess.Process]['Game-Name'] = msg['Game-Name'] or nil
 		--TODO: send join message for player who created
 	end)
 	-- createActionHandler(actions.Spawned, function(msg)
